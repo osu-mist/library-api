@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Express API Skeleton
+  title: Library API
   description: Skeleton for Express APIs
   version: v2
   license:
