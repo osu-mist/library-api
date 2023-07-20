@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Library API
-  description: Skeleton for Express APIs
-  version: v2
+  description: Get information about books and members of library at OSU.
+  version: v1
   license:
     name: GNU Affero General Public License Version 3
     url: http://www.gnu.org/licenses/agpl-3.0.en.html
@@ -12,56 +12,75 @@ info:
     email: isdataarchitecture@oregonstate.edu
 externalDocs:
   description: GitHub Repository
-  url: https://github.com/osu-mist/express-api-skeleton
+  url: https://github.com/osu-mist/library-api
 servers:
-  - url: https://api.oregonstate.edu/v2
+  - url: https://api.oregonstate.edu/v1
 security:
   - OAuth2:
       - full
 paths:
-  /pets:
+  /books:
     get:
-      summary: List all pets
+      summary: List all books
       tags:
-        - pets
-      description: Get all pets
-      operationId: getPets
+        - books
+      description: Get all books
+      operationId: getBooks
       parameters:
         - $ref: '#/components/parameters/pageNumber'
         - $ref: '#/components/parameters/pageSize'
         - in: query
-          name: filter[species]
-          description: Search by pet species
+          name: filter[title]
+          description: Search by book title
           required: false
           schema:
             type: string
         - in: query
-          name: filter[hasOwner]
-          description: Filter results if pet has an owner or not
+          name: filter[author]
+          description: Search by book author.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[publication_year]
+          description: Filter books published on a specific year.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: filter[isbn]
+          description: Filter books by International Standard Book Number (ISBN) for the book
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[available]
+          description: Filter books by availability (true/false).
           required: false
           schema:
             type: boolean
         - in: query
-          name: filter[age][gt]
-          description: Filter results by age
+          name: filter[genre]
+          description: Filter books by genre.
           required: false
           schema:
-            type: number
-            format: integer
+            type: string
         - in: query
-          name: filter[age][lt]
-          description: Filter results by age
+          name: filter[description]
+          description: Search by book description.
           required: false
           schema:
-            type: number
-            format: integer
+            type: string
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PetSetResult'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -171,6 +190,25 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResult'
   schemas:
+    Book:
+      type: object
+      properties:
+        book_id:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        publication_year:
+          type: integer
+        isbn:
+          type: string
+        available:
+          type: boolean
+        genre:
+          type: string
+        description:
+          type: string
     Meta:
       properties:
         totalResults:
