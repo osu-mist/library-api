@@ -351,6 +351,171 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+  /borrows:
+    get:
+      summary: Retrieve a list of all borrowed books from the library.
+      tags:
+        - borrows
+      description: Get all Borrowed Books
+      operationId: getBorrows
+      parameters:
+        - $ref: '#/components/parameters/pageNumber'
+        - $ref: '#/components/parameters/pageSize'
+        - in: query
+          name: filter[book_id]
+          description: Search by book ID borrowed.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[member_id]
+          description: Search by member ID who borrowed the book.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[borrow_date]
+          description: Filter books borrowed on a specific date.
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: filter[due_date]
+          description: Filter books due on a specific date.
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: filter[return_date]
+          description: Filter books returned on a specific date.
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: filter[status]
+          description: Filter books by borrowing status.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Borrow'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      summary: Borrow a book against a specific member.
+      tags:
+        - borrows
+      operationId: postBorrowBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewBorrow'
+      responses:
+        '201':
+          description: The newly borrowed book.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Borrow'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+  /borrows/{id}:
+    get:
+      summary: Retrieve details of a specific borrowed book.
+      tags:
+        - borrows
+      description: Get a Borrowed Book by unique identifier.
+      operationId: getBorrowBookById
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the borrowing book transaction.
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Borrow'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+          
+    patch:
+      summary: Update details of a specific borrowed book.
+      tags:
+        - borrows
+      description: Update a borrowed book transaction by a unique identifier.
+      operationId: updateBorrowBookById
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the borrowing book transaction.
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewBorrow'
+      responses:
+        '200':
+          description: Details of the updated borrowed book.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Borrow'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      summary: Remove a specific borrowed book.
+      tags:
+        - borrows
+      description: Remove a borrowed book by unique identifier.
+      operationId: deleteBorrowBookById
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the borrowing book transaction.
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '204':
+          description: Borrowed book record successfully deleted.
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
 components:
   securitySchemes:
     OAuth2:
@@ -409,7 +574,7 @@ components:
     Book:
       type: object
       properties:
-        book_id:
+        id:
           type: string
         title:
           type: string
@@ -445,7 +610,7 @@ components:
     Member:
       type: object
       properties:
-        member_id:
+        id:
           type: string
         first_name:
           type: string
@@ -472,6 +637,36 @@ components:
         address:
           type: string
         phone_number:
+          type: string
+          
+    Borrow:
+      type: object
+      properties:
+        id:
+          type: string
+        book_id:
+          type: string
+        member_id:
+          type: string
+        borrow_date:
+          type: string
+        due_date:
+          type: string
+        return_date:
+          type: string
+        status:
+          type: string
+          
+    NewBorrow:
+      type: object
+      properties:
+        book_id:
+          type: string
+        member_id:
+          type: string
+        borrow_date:
+          type: string
+        due_date:
           type: string
           
     Meta:
