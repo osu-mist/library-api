@@ -95,7 +95,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewBook'
+              $ref: '#/components/schemas/BookPostBody'
       responses:
         '201':
           description: Book successfully created
@@ -571,6 +571,26 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResult'
   schemas:
+    BookPostBody:
+      type: object
+      required:
+        - data
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          additionalProperties: false
+          properties:
+            type:
+              type: string
+              enum:
+              - pizza
+            attributes:
+              allOf:
+                - $ref: '#/components/schemas/NewBook'
     Book:
       type: object
       properties:
@@ -668,6 +688,8 @@ components:
           type: string
         due_date:
           type: string
+          
+          
           
     Meta:
       properties:
