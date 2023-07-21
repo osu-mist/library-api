@@ -98,7 +98,7 @@ paths:
               $ref: '#/components/schemas/NewBook'
       responses:
         '201':
-          description: Pet successfully created
+          description: Book successfully created
           content:
             application/json:
               schema:
@@ -184,6 +184,169 @@ paths:
       responses:
         '204':
           description: Book successfully deleted.
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+          
+  /members:
+    get:
+      summary: Retrieve a list of all library members.
+      tags:
+        - members
+      description: Get all Members
+      operationId: getMembers
+      parameters:
+        - $ref: '#/components/parameters/pageNumber'
+        - $ref: '#/components/parameters/pageSize'
+        - in: query
+          name: filter[first_name]
+          description: Search by member first name.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[last_name]
+          description: Search by member last name.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[email]
+          description: Search by member email.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[address]
+          description: Search by member address.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[phone_number]
+          description: Search by member phone number.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[membership_status]
+          description: Filter members by membership status.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Member'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      summary: Add a new member to the library.
+      tags:
+        - members
+      operationId: postMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMember'
+      responses:
+        '201':
+          description: Member successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+  /members/{id}:
+    get:
+      summary: Retrieve details of a specific member.
+      tags:
+        - members
+      description: Get Member by unique identifier.
+      operationId: getMemberById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Member ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+          
+    patch:
+      summary: Update details of a specific member.
+      tags:
+        - members
+      description: Update a member by unique identifier.
+      operationId: updateMemberById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Member ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMember'
+      responses:
+        '200':
+          description: Details of the updated member.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      summary: Remove a specific member of the library.
+      tags:
+        - members
+      description: Remove a member by unique identifier.
+      operationId: deleteMemberById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Member ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '204':
+          description: Member successfully deleted.
         '404':
           $ref: '#/components/responses/404'
         '500':
@@ -277,6 +440,38 @@ components:
         genre:
           type: string
         description:
+          type: string
+          
+    Member:
+      type: object
+      properties:
+        member_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        membership_status:
+          type: string
+          
+    NewMember:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        phone_number:
           type: string
           
     Meta:
