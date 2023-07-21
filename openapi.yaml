@@ -42,7 +42,7 @@ paths:
           schema:
             type: string
         - in: query
-          name: filter[publication_year]
+          name: filter[publicationYear]
           description: Filter books published on a specific year.
           required: false
           schema:
@@ -200,13 +200,13 @@ paths:
         - $ref: '#/components/parameters/pageNumber'
         - $ref: '#/components/parameters/pageSize'
         - in: query
-          name: filter[first_name]
+          name: filter[firstName]
           description: Search by member first name.
           required: false
           schema:
             type: string
         - in: query
-          name: filter[last_name]
+          name: filter[lastName]
           description: Search by member last name.
           required: false
           schema:
@@ -224,13 +224,13 @@ paths:
           schema:
             type: string
         - in: query
-          name: filter[phone_number]
+          name: filter[phoneNumber]
           description: Search by member phone number.
           required: false
           schema:
             type: string
         - in: query
-          name: filter[membership_status]
+          name: filter[membershipStatus]
           description: Filter members by membership status.
           required: false
           schema:
@@ -258,7 +258,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewMember'
+              $ref: '#/components/schemas/MemberPostBody'
       responses:
         '201':
           description: Member successfully created
@@ -587,10 +587,56 @@ components:
             type:
               type: string
               enum:
-              - pizza
+              - book
             attributes:
               allOf:
-                - $ref: '#/components/schemas/NewBook'
+                - $ref: '#/components/schemas/BookPostRequired'
+                - $ref: '#/components/schemas/BookPostAttributes'
+          
+    BookPostRequired:
+      type: object
+      required:
+        - title
+        - author
+        - publicationYear
+        - genre
+          
+    BookPostAttributes:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          nullable: false
+          description: Title of book
+          example: The Alchemist
+        author:
+          type: string
+          nullable: false
+          description: Author of book
+          example: Paulo Coelho
+        publicationYear:
+          type: integer
+          nullable: false
+          description: Publication year of book
+          pattern: ^\d{4}$
+          example: 1988
+        isbn:
+          type: string
+          nullable: true
+          description: International Standard Book Number (ISBN) for the book
+          example: 978-0061122415
+        genre:
+          type: string
+          nullable: false
+          description: Genre year of book
+          example: Fiction
+        description:
+          type: string
+          nullable: true
+          description: Description or summary of book
+          example: The Alchemist follows the journey of an Andalusian shepherd boy named Santiago...
+          
     Book:
       type: object
       properties:
@@ -600,7 +646,7 @@ components:
           type: string
         author:
           type: string
-        publication_year:
+        publicationYear:
           type: integer
         isbn:
           type: string
@@ -611,53 +657,84 @@ components:
         description:
           type: string
           
-    NewBook:
+    MemberPostBody:
+      type: object
+      required:
+        - data
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          additionalProperties: false
+          properties:
+            type:
+              type: string
+              enum:
+              - member
+            attributes:
+              allOf:
+                - $ref: '#/components/schemas/MemberPostRequired'
+                - $ref: '#/components/schemas/MemberPostAttributes'
+                
+    MemberPostRequired:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - address
+        - phoneNumber
+                
+    MemberPostAttributes:
       type: object
       properties:
-        title:
+        firstName:
           type: string
-        author:
+          nullable: false
+          description: First name of member
+          example: John
+        lastName:
           type: string
-        publication_year:
-          type: integer
-        isbn:
+          nullable: false
+          description: Last name of member
+          example: Doe
+        email:
           type: string
-        genre:
+          nullable: false
+          description: Email of member
+          example: john.doe@example.com
+        address:
           type: string
-        description:
+          nullable: false
+          description: Address of member
+          example: 123 Main Street, Cityville
+        phoneNumber:
           type: string
+          nullable: false
+          description: Phone number of member
+          example: 555-123-4567
           
     Member:
       type: object
       properties:
         id:
           type: string
-        first_name:
+        firstName:
           type: string
-        last_name:
+        lastName:
           type: string
         email:
           type: string
         address:
           type: string
-        phone_number:
+        phoneNumber:
           type: string
-        membership_status:
+        membershipStatus:
           type: string
           
-    NewMember:
-      type: object
-      properties:
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        address:
-          type: string
-        phone_number:
-          type: string
           
     Borrow:
       type: object
