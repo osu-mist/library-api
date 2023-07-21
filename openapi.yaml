@@ -21,7 +21,7 @@ security:
 paths:
   /books:
     get:
-      summary: List all books
+      summary: Retrieve a list of all books in the library.
       tags:
         - books
       description: Get all books
@@ -86,40 +86,40 @@ paths:
         '500':
           $ref: '#/components/responses/500'
     post:
-      summary: Add a new pet
+      summary: Add a new book to library
       tags:
-        - pets
-      operationId: postPet
+        - books
+      operationId: postBook
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PetPostBody'
+              $ref: '#/components/schemas/NewBook'
       responses:
         '201':
           description: Pet successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PetResult'
+                $ref: '#/components/schemas/Book'
         '400':
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /pets/{id}:
+  /books/{id}:
     get:
-      summary: Info for a specific pet
+      summary: Retrieve details of a specific book.
       tags:
-        - pets
-      description: Get pet by unique ID
-      operationId: getPetById
+        - books
+      description: Get book by unique identifier.
+      operationId: getBookById
       parameters:
         - name: id
           in: path
-          description: Unique Pet ID
+          description: Unique Book ID
           required: true
           schema:
             type: string
@@ -130,7 +130,60 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PetResult'
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+          
+    patch:
+      summary: Update details of a specific book.
+      tags:
+        - books
+      description: Update a book by unique identifier.
+      operationId: updateBookById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Book ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewBook'
+      responses:
+        '200':
+          description: Details of the updated book.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      summary: Remove a specific book from the library.
+      tags:
+        - books
+      description: Remove a book by unique identifier.
+      operationId: deleteBookById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Book ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '204':
+          description: Book successfully deleted.
         '404':
           $ref: '#/components/responses/404'
         '500':
@@ -209,6 +262,23 @@ components:
           type: string
         description:
           type: string
+          
+    NewBook:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        publication_year:
+          type: integer
+        isbn:
+          type: string
+        genre:
+          type: string
+        description:
+          type: string
+          
     Meta:
       properties:
         totalResults:
