@@ -80,7 +80,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Book'
+                  $ref: '#/components/schemas/BooksResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -102,7 +102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: '#/components/schemas/BookResult'
         '400':
           $ref: '#/components/responses/400'
         '409':
@@ -243,7 +243,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Member'
+                  $ref: '#/components/schemas/MembersResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -265,7 +265,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Member'
+                $ref: '#/components/schemas/MemberResult'
         '400':
           $ref: '#/components/responses/400'
         '409':
@@ -637,25 +637,48 @@ components:
           description: Description or summary of book
           example: The Alchemist follows the journey of an Andalusian shepherd boy named Santiago...
           
-    Book:
+    BookAttributes:
+      allOf:
+        - $ref: '#/components/schemas/BookPostAttributes'
+        - type: object
+          properties:
+            available:
+              type: string
+              nullable: false
+              description: Availability of book (true/false).
+              example: true
+          
+    BookResource:
       type: object
       properties:
         id:
           type: string
-        title:
+          description: Book ID
+          example: '26'
+        type:
           type: string
-        author:
-          type: string
-        publicationYear:
-          type: integer
-        isbn:
-          type: string
-        available:
-          type: boolean
-        genre:
-          type: string
-        description:
-          type: string
+          enum:
+            - book
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        attributes:
+          $ref: '#/components/schemas/BookAttributes'
+          
+    BookResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+            $ref: '#/components/schemas/BookResource'
+          
+    BooksResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookResource'
           
     MemberPostBody:
       type: object
@@ -716,6 +739,49 @@ components:
           nullable: false
           description: Phone number of member
           example: 555-123-4567
+          
+    MemberAttributes:
+      allOf:
+        - $ref: '#/components/schemas/MemberPostAttributes'
+        - type: object
+          properties:
+            membershipStatus:
+              type: string
+              nullable: false
+              description: Membership status of the member (active/suspended/expired).
+              example: active
+          
+    MemberResource:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Member ID
+          example: '001'
+        type:
+          type: string
+          enum:
+            - member
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        attributes:
+          $ref: '#/components/schemas/MemberAttributes'
+          
+    MemberResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+            $ref: '#/components/schemas/MemberResource'
+          
+    MembersResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberResource'
           
     Member:
       type: object
