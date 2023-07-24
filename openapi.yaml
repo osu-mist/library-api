@@ -300,7 +300,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Member'
+                $ref: '#/components/schemas/MemberResult'
         '404':
           $ref: '#/components/responses/404'
         '500':
@@ -793,6 +793,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MemberResource'
+            
+    MemberPatchBody:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+          additionalProperties: false
+          properties:
+            id:
+              $ref: '#/components/schemas/MemberId'
+            type:
+              $ref: '#/components/schemas/MemberType'
+            attributes:
+              $ref: '#/components/schemas/MemberPostAttributes'
           
           
           
