@@ -274,7 +274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Member'
+                $ref: '#/components/schemas/MemberResult'
         '404':
           $ref: '#/components/responses/404'
         '500':
@@ -293,7 +293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewMember'
+              $ref: '#/components/schemas/MemberPatchBody'
       responses:
         '200':
           description: Details of the updated member.
@@ -546,6 +546,41 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResult'
   schemas:
+    BookId:
+      type: string
+      description: Book ID
+      example: '26'
+    BookType:
+      type: string
+      enum:
+        - book
+    BookAvailable:
+      type: string
+      nullable: false
+      description: Availability of book (true/false).
+      example: true
+    MemberId:
+      type: string
+      description: Member ID
+      example: '001'
+    MemberType:
+      type: string
+      enum:
+        - member
+    MembershipStatus:
+      type: string
+      nullable: false
+      description: Membership status of the member (active/suspended/expired).
+      example: active
+    BorrowId:
+      type: string
+      description: Borrow ID
+      example: 'bo123'
+    BorrowType:
+      type: string
+      enum:
+        - borrow
+    
     BookPostBody:
       type: object
       required:
@@ -560,9 +595,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              type: string
-              enum:
-              - book
+              $ref: '#/components/schemas/BookType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/BookPostRequired'
@@ -618,22 +651,15 @@ components:
         - type: object
           properties:
             available:
-              type: string
-              nullable: false
-              description: Availability of book (true/false).
-              example: true
+              $ref: '#/components/schemas/BookAvailable'
           
     BookResource:
       type: object
       properties:
         id:
-          type: string
-          description: Book ID
-          example: '26'
+          $ref: '#/components/schemas/BookId'
         type:
-          type: string
-          enum:
-            - book
+          $ref: '#/components/schemas/BookType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -668,13 +694,9 @@ components:
           additionalProperties: false
           properties:
             id:
-              type: string
-              description: Book ID
-              example: '26'
+              $ref: '#/components/schemas/BookId'
             type:
-              type: string
-              enum:
-                - book
+              $ref: '#/components/schemas/BookType'
             attributes:
               $ref: '#/components/schemas/BookPostAttributes'
           
@@ -692,9 +714,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              type: string
-              enum:
-              - member
+              $ref: '#/components/schemas/MemberType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/MemberPostRequired'
@@ -744,22 +764,15 @@ components:
         - type: object
           properties:
             membershipStatus:
-              type: string
-              nullable: false
-              description: Membership status of the member (active/suspended/expired).
-              example: active
+              $ref: '#/components/schemas/MembershipStatus'
           
     MemberResource:
       type: object
       properties:
         id:
-          type: string
-          description: Member ID
-          example: '001'
+          $ref: '#/components/schemas/MemberId'
         type:
-          type: string
-          enum:
-            - member
+          $ref: '#/components/schemas/MemberType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -780,55 +793,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MemberResource'
-          
-    Member:
-      type: object
-      properties:
-        id:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-        address:
-          type: string
-        phoneNumber:
-          type: string
-        membershipStatus:
-          type: string
-          
-          
-    Borrow:
-      type: object
-      properties:
-        id:
-          type: string
-        book_id:
-          type: string
-        member_id:
-          type: string
-        borrow_date:
-          type: string
-        due_date:
-          type: string
-        return_date:
-          type: string
-        status:
-          type: string
-          
-    NewBorrow:
-      type: object
-      properties:
-        book_id:
-          type: string
-        member_id:
-          type: string
-        borrow_date:
-          type: string
-        due_date:
-          type: string
           
           
           
