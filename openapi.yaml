@@ -80,7 +80,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BooksResult'
+                  $ref: '#/components/schemas/BookSetResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -229,7 +229,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MembersResult'
+                  $ref: '#/components/schemas/MemberSetResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -375,7 +375,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BorrowsResult'
+                  $ref: '#/components/schemas/BorrowSetResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -677,7 +677,7 @@ components:
             $ref: '#/components/schemas/SelfLink'
         data:
             $ref: '#/components/schemas/BookResource'
-    BooksResult:
+    BookSetResult:
       properties:
         links:
             $ref: '#/components/schemas/SelfLink'
@@ -782,7 +782,7 @@ components:
             $ref: '#/components/schemas/SelfLink'
         data:
             $ref: '#/components/schemas/MemberResource'
-    MembersResult:
+    MemberSetResult:
       properties:
         links:
             $ref: '#/components/schemas/SelfLink'
@@ -808,7 +808,7 @@ components:
               $ref: '#/components/schemas/MemberType'
             attributes:
               $ref: '#/components/schemas/MemberAttributes'
-    BorrowsResult:
+    BorrowSetResult:
       properties:
         links:
             $ref: '#/components/schemas/SelfLink'
