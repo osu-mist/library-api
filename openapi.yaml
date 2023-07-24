@@ -130,7 +130,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: '#/components/schemas/BookResult'
         '404':
           $ref: '#/components/responses/404'
         '500':
@@ -152,19 +152,24 @@ paths:
             pattern: '^[A-Za-z0-9-]+$'
       requestBody:
         required: true
+        description: patch body for a book
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewBook'
+              $ref: '#/components/schemas/BookPatchBody'
       responses:
         '200':
           description: Details of the updated book.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: '#/components/schemas/BookResult'
+        '400':
+          $ref: '#/components/responses/400'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
     delete:
@@ -679,6 +684,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BookResource'
+            
+    BookPatchBody:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+          additionalProperties: false
+          properties:
+            id:
+              type: string
+              description: Book ID
+              example: '26'
+            type:
+              type: string
+              enum:
+                - book
+            attributes:
+              $ref: '#/components/schemas/BookPostAttributes'
           
     MemberPostBody:
       type: object
