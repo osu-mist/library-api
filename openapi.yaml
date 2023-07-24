@@ -129,7 +129,6 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-          
     patch:
       summary: Update details of a specific book.
       tags:
@@ -279,7 +278,6 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-          
     patch:
       summary: Update details of a specific member.
       tags:
@@ -377,7 +375,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Borrow'
+                  $ref: '#/components/schemas/BorrowsResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
@@ -392,14 +390,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewBorrow'
+              $ref: '#/components/schemas/BorrowPostBody'
       responses:
         '201':
           description: The newly borrowed book.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Borrow'
+                $ref: '#/components/schemas/BorrowResult'
         '400':
           $ref: '#/components/responses/400'
         '409':
@@ -421,12 +419,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Borrow'
+                $ref: '#/components/schemas/BorrowResult'
         '404':
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-          
     patch:
       summary: Update details of a specific borrowed book.
       tags:
@@ -440,16 +437,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewBorrow'
+              $ref: '#/components/schemas/BorrowPatchBody'
       responses:
         '200':
           description: Details of the updated borrowed book.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Borrow'
+                $ref: '#/components/schemas/BorrowResult'
+        '400':
+          $ref: '#/components/responses/400'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
     delete:
@@ -580,7 +581,17 @@ components:
       type: string
       enum:
         - borrow
-    
+    BorrowReturnDate:
+      type: string
+      format: date
+      nullable: true
+      description: Returned date of the book
+      example: null
+    BorrowStatus:
+      type: string
+      nullable: true
+      description: Current borrow status of the book (ongoing/returned/overdue)
+      example: ongoing
     BookPostBody:
       type: object
       required:
@@ -600,7 +611,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/BookPostRequired'
                 - $ref: '#/components/schemas/BookPostAttributes'
-          
     BookPostRequired:
       type: object
       required:
@@ -608,7 +618,6 @@ components:
         - author
         - publicationYear
         - genre
-          
     BookPostAttributes:
       type: object
       additionalProperties: false
@@ -644,7 +653,6 @@ components:
           nullable: true
           description: Description or summary of book
           example: The Alchemist follows the journey of an Andalusian shepherd boy named Santiago...
-          
     BookAttributes:
       allOf:
         - $ref: '#/components/schemas/BookPostAttributes'
@@ -652,7 +660,6 @@ components:
           properties:
             available:
               $ref: '#/components/schemas/BookAvailable'
-          
     BookResource:
       type: object
       properties:
@@ -664,14 +671,12 @@ components:
           $ref: '#/components/schemas/SelfLink'
         attributes:
           $ref: '#/components/schemas/BookAttributes'
-          
     BookResult:
       properties:
         links:
             $ref: '#/components/schemas/SelfLink'
         data:
             $ref: '#/components/schemas/BookResource'
-          
     BooksResult:
       properties:
         links:
@@ -680,7 +685,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BookResource'
-            
     BookPatchBody:
       type: object
       required:
@@ -698,8 +702,7 @@ components:
             type:
               $ref: '#/components/schemas/BookType'
             attributes:
-              $ref: '#/components/schemas/BookPostAttributes'
-          
+              $ref: '#/components/schemas/BookAttributes'
     MemberPostBody:
       type: object
       required:
@@ -719,7 +722,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/MemberPostRequired'
                 - $ref: '#/components/schemas/MemberPostAttributes'
-                
     MemberPostRequired:
       type: object
       required:
@@ -728,7 +730,6 @@ components:
         - email
         - address
         - phoneNumber
-                
     MemberPostAttributes:
       type: object
       properties:
@@ -757,7 +758,6 @@ components:
           nullable: false
           description: Phone number of member
           example: 555-123-4567
-          
     MemberAttributes:
       allOf:
         - $ref: '#/components/schemas/MemberPostAttributes'
@@ -765,7 +765,6 @@ components:
           properties:
             membershipStatus:
               $ref: '#/components/schemas/MembershipStatus'
-          
     MemberResource:
       type: object
       properties:
@@ -777,14 +776,12 @@ components:
           $ref: '#/components/schemas/SelfLink'
         attributes:
           $ref: '#/components/schemas/MemberAttributes'
-          
     MemberResult:
       properties:
         links:
             $ref: '#/components/schemas/SelfLink'
         data:
             $ref: '#/components/schemas/MemberResource'
-          
     MembersResult:
       properties:
         links:
@@ -793,7 +790,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MemberResource'
-            
     MemberPatchBody:
       type: object
       required:
@@ -811,10 +807,105 @@ components:
             type:
               $ref: '#/components/schemas/MemberType'
             attributes:
-              $ref: '#/components/schemas/MemberPostAttributes'
-          
-          
-          
+              $ref: '#/components/schemas/MemberAttributes'
+    BorrowsResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BorrowResource'
+    BorrowResource:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/BorrowId'
+        type:
+          $ref: '#/components/schemas/BorrowType'
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        attributes:
+          $ref: '#/components/schemas/BorrowAttributes'
+    BorrowAttributes:
+      allOf:
+        - $ref: '#/components/schemas/BorrowPostAttributes'
+        - type: object
+          properties:
+            returnDate:
+              $ref: '#/components/schemas/BorrowReturnDate'
+            status:
+              $ref: '#/components/schemas/BorrowStatus'
+    BorrowPostAttributes:
+      type: object
+      additionalProperties: false
+      properties:
+        bookId:
+          $ref: '#/components/schemas/BookId'
+        memberId:
+          $ref: '#/components/schemas/MemberId'
+        borrowDate:
+          type: string
+          format: date
+          nullable: false
+          description: Borrow date of the book
+          example: 2023-06-30
+        dueDate:
+          type: string
+          format: date
+          nullable: false
+          description: Due date for returning the book
+          example: 2023-07-30
+    BorrowPostBody:
+      type: object
+      required:
+        - data
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          required:
+            - type
+            - attributes
+          additionalProperties: false
+          properties:
+            type:
+              $ref: '#/components/schemas/BorrowType'
+            attributes:
+              allOf:
+                - $ref: '#/components/schemas/BorrowPostRequired'
+                - $ref: '#/components/schemas/BorrowPostAttributes'
+    BorrowPostRequired:
+      type: object
+      required:
+        - bookId
+        - memberId
+        - borrowDate
+        - dueDate
+    BorrowResult:
+      properties:
+        links:
+            $ref: '#/components/schemas/SelfLink'
+        data:
+            $ref: '#/components/schemas/BorrowResource'
+    BorrowPatchBody:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+          additionalProperties: false
+          properties:
+            id:
+              $ref: '#/components/schemas/BorrowId'
+            type:
+              $ref: '#/components/schemas/BorrowType'
+            attributes:
+              $ref: '#/components/schemas/BorrowAttributes'
     Meta:
       properties:
         totalResults:
@@ -859,105 +950,6 @@ components:
           format: uri
           nullable: true
           description: The next page of data
-    PetResource:
-      properties:
-        id:
-          type: string
-          description: A unique ID of pet
-        type:
-          type: string
-          enum:
-            - pet
-        links:
-          $ref: '#/components/schemas/SelfLink'
-        attributes:
-          properties:
-            name:
-              type: string
-              description: Name of pet
-              example: Hedwig
-            owner:
-              type: string
-              description: Name of owner
-              example: Harry Potter
-            species:
-              type: string
-              description: Species of pet
-              example: Owl
-            age:
-              type: number
-              format: integer
-              description: Age of pet
-              example: 5
-            size:
-              type: object
-              properties:
-                length:
-                  type: number
-                  format: float
-                  description: Length in inches
-                  example: 18
-                chest:
-                  type: number
-                  format: float
-                  description: Chest size in inches
-                  example: 16
-                weight:
-                  type: number
-                  format: float
-                  description: Weight in pounds
-                  example: 8
-    PetPostBody:
-      type: object
-      properties:
-        data:
-          type: object
-          properties:
-            type:
-              $ref: '#/components/schemas/PetResource/properties/type'
-            attributes:
-              type: object
-              properties:
-                name:
-                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/name'
-                owner:
-                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/owner'
-                species:
-                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/species'
-                age:
-                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/age'
-                size:
-                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/size'
-              required:
-                - name
-                - owner
-                - species
-              additionalProperties: false
-          required:
-            - type
-            - attributes
-          additionalProperties: false
-      required:
-       - data
-      additionalProperties: false
-    PetResult:
-      properties:
-        links:
-          $ref: '#/components/schemas/SelfLink'
-        data:
-          $ref: '#/components/schemas/PetResource'
-    PetSetResult:
-      properties:
-        links:
-          allOf:
-            - $ref: '#/components/schemas/SelfLink'
-            - $ref: '#/components/schemas/PaginationLinks'
-        meta:
-          $ref: '#/components/schemas/Meta'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/PetResource'
     ErrorObject:
       properties:
         status:
