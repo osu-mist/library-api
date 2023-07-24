@@ -117,13 +117,7 @@ paths:
       description: Get book by unique identifier.
       operationId: getBookById
       parameters:
-        - name: id
-          in: path
-          description: Unique Book ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/bookId'
       responses:
         '200':
           description: Successful response
@@ -143,13 +137,7 @@ paths:
       description: Update a book by unique identifier.
       operationId: updateBookById
       parameters:
-        - name: id
-          in: path
-          description: Unique Book ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/bookId'
       requestBody:
         required: true
         description: patch body for a book
@@ -179,13 +167,7 @@ paths:
       description: Remove a book by unique identifier.
       operationId: deleteBookById
       parameters:
-        - name: id
-          in: path
-          description: Unique Book ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/bookId'
       responses:
         '204':
           description: Book successfully deleted.
@@ -285,13 +267,7 @@ paths:
       description: Get Member by unique identifier.
       operationId: getMemberById
       parameters:
-        - name: id
-          in: path
-          description: Unique Member ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/memberId'
       responses:
         '200':
           description: Successful response
@@ -311,13 +287,7 @@ paths:
       description: Update a member by unique identifier.
       operationId: updateMemberById
       parameters:
-        - name: id
-          in: path
-          description: Unique Member ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/memberId'
       requestBody:
         required: true
         content:
@@ -342,13 +312,7 @@ paths:
       description: Remove a member by unique identifier.
       operationId: deleteMemberById
       parameters:
-        - name: id
-          in: path
-          description: Unique Member ID
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/memberId'
       responses:
         '204':
           description: Member successfully deleted.
@@ -450,13 +414,7 @@ paths:
       description: Get a Borrowed Book by unique identifier.
       operationId: getBorrowBookById
       parameters:
-        - name: id
-          in: path
-          description: The unique identifier of the borrowing book transaction.
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/borrowId'
       responses:
         '200':
           description: Successful response
@@ -476,13 +434,7 @@ paths:
       description: Update a borrowed book transaction by a unique identifier.
       operationId: updateBorrowBookById
       parameters:
-        - name: id
-          in: path
-          description: The unique identifier of the borrowing book transaction.
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/borrowId'
       requestBody:
         required: true
         content:
@@ -507,13 +459,7 @@ paths:
       description: Remove a borrowed book by unique identifier.
       operationId: deleteBorrowBookById
       parameters:
-        - name: id
-          in: path
-          description: The unique identifier of the borrowing book transaction.
-          required: true
-          schema:
-            type: string
-            pattern: '^[A-Za-z0-9-]+$'
+        - $ref: '#/components/parameters/borrowId'
       responses:
         '204':
           description: Borrowed book record successfully deleted.
@@ -550,6 +496,30 @@ components:
         minimum: 1
         maximum: 500
         default: 25
+    bookId:
+      name: id
+      in: path
+      description: Unique Book ID
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9-]+$'
+    memberId:
+      name: id
+      in: path
+      description: Unique Member ID
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9-]+$'
+    borrowId:
+      name: id
+      in: path
+      description: Unique Borrow ID
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9-]+$'
   responses:
     '400':
       description: Bad request
