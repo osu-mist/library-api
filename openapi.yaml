@@ -36,7 +36,7 @@ paths:
           schema:
             type: string
         - in: query
-          name: filter[author]
+          name: filter[author][fuzzy]
           description: Search by book author.
           required: false
           schema:
@@ -48,6 +48,7 @@ paths:
           schema:
             type: integer
             format: int32
+            pattern: ^\d{4}$
         - in: query
           name: filter[isbn]
           description: Filter books by International Standard Book Number (ISBN) for the book
@@ -67,7 +68,7 @@ paths:
           schema:
             type: string
         - in: query
-          name: filter[description]
+          name: filter[description][fuzzy]
           description: Search by book description.
           required: false
           schema:
@@ -215,6 +216,7 @@ paths:
           required: false
           schema:
             type: string
+            pattern: '^\d{3}-\d{3}-\d{4}$'
         - in: query
           name: filter[membershipStatus]
           description: Filter members by membership status.
@@ -755,6 +757,7 @@ components:
           example: 123 Main Street, Cityville
         phoneNumber:
           type: string
+          pattern: '^\d{3}-\d{3}-\d{4}$'
           nullable: false
           description: Phone number of member
           example: 555-123-4567
