@@ -165,21 +165,6 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-    delete:
-      summary: Remove a specific book from the library.
-      tags:
-        - books
-      description: Remove a book by unique identifier.
-      operationId: deleteBookById
-      parameters:
-        - $ref: '#/components/parameters/bookId'
-      responses:
-        '204':
-          description: Book successfully deleted.
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
           
   /members:
     get:
@@ -240,7 +225,7 @@ paths:
           required: false
           schema:
             type: string
-            example: United States of America
+            example: US
         - in: query
           name: filter[phoneNumber]
           description: Search by member phone number.
@@ -255,10 +240,8 @@ paths:
           required: false
           schema:
             type: string
-            enum:
-              - active
-              - suspended
-              - expired
+            allOf:
+             - $ref: '#/components/schemas/MemberStatusEnum'
       responses:
         '200':
           description: Successful response
@@ -341,21 +324,6 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-    delete:
-      summary: Remove a specific member of the library.
-      tags:
-        - members
-      description: Remove a member by unique identifier.
-      operationId: deleteMemberById
-      parameters:
-        - $ref: '#/components/parameters/memberId'
-      responses:
-        '204':
-          description: Member successfully deleted.
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
   /borrows:
     get:
       summary: Retrieve a list of all borrowed books from the library.
@@ -387,16 +355,16 @@ paths:
           schema:
             type: string
             format: date
-            description: The date in the format YYYY-MM-DD.
+            description: The borrow date in the format YYYY-MM-DD.
             example: '2023-06-30'
         - in: query
           name: filter[dueDate]
-          description: Filter books due on a specific date.
+          description: Filter books on a specific due date.
           required: false
           schema:
             type: string
             format: date
-            description: The date in the format YYYY-MM-DD.
+            description: The due date in the format YYYY-MM-DD.
             example: '2023-07-30'
         - in: query
           name: filter[returnDate]
@@ -406,17 +374,15 @@ paths:
           schema:
             type: string
             format: date
-            description: The date in the format YYYY-MM-DD.
+            description: The return date in the format YYYY-MM-DD.
         - in: query
           name: filter[status]
           description: Filter books by borrowing status.
           required: false
           schema:
             type: string
-            enum: 
-              - ongoing
-              - returned
-              - overdue
+            allOf:
+              - $ref: '#/components/schemas/BookStatusEnum'
       responses:
         '200':
           description: Successful response
@@ -503,21 +469,6 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-    delete:
-      summary: Remove a specific borrowed book.
-      tags:
-        - borrows
-      description: Remove a borrowed book by unique identifier.
-      operationId: deleteBorrowBookById
-      parameters:
-        - $ref: '#/components/parameters/borrowId'
-      responses:
-        '204':
-          description: Borrowed book record successfully deleted.
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
 components:
   securitySchemes:
     OAuth2:
@@ -601,7 +552,7 @@ components:
       type: string
       description: Book ID
       example: '26'
-    BookType:
+    BooksType:
       type: string
       enum:
         - book
@@ -610,11 +561,17 @@ components:
       nullable: false
       description: Availability of book (true/false).
       example: true
+    BookStatusEnum:
+      type: string
+      enum:
+        - ongoing
+        - returned
+        - overdue
     MemberId:
       type: string
       description: Member ID
       example: '001'
-    MemberType:
+    MembersType:
       type: string
       enum:
         - member
@@ -622,6 +579,10 @@ components:
       type: string
       nullable: false
       description: Membership status of the member (active/suspended/expired).
+      allOf:
+        - $ref: '#/components/schemas/MemberStatusEnum'
+    MemberStatusEnum:
+      type: string
       enum:
         - active
         - suspended
@@ -630,7 +591,7 @@ components:
       type: string
       description: Borrow ID
       example: bo123
-    BorrowType:
+    BorrowsType:
       type: string
       enum:
         - borrow
@@ -644,10 +605,8 @@ components:
       type: string
       nullable: true
       description: Current borrow status of the book (ongoing/returned/overdue)
-      enum:
-        - ongoing
-        - returned
-        - overdue
+      allOf:
+        - $ref: '#/components/schemas/BookStatusEnum'
     BookPostBody:
       type: object
       required:
@@ -662,7 +621,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/BookType'
+              $ref: '#/components/schemas/BooksType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/BookPostRequired'
@@ -724,7 +683,7 @@ components:
         id:
           $ref: '#/components/schemas/BookId'
         type:
-          $ref: '#/components/schemas/BookType'
+          $ref: '#/components/schemas/BooksType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -758,7 +717,7 @@ components:
             id:
               $ref: '#/components/schemas/BookId'
             type:
-              $ref: '#/components/schemas/BookType'
+              $ref: '#/components/schemas/BooksType'
             attributes:
               $ref: '#/components/schemas/BookAttributes'
     MemberPostBody:
@@ -775,7 +734,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/MemberType'
+              $ref: '#/components/schemas/MembersType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/MemberPostRequired'
@@ -829,7 +788,7 @@ components:
           type: string
           nullable: false
           description: Country of member
-          example: United States of America
+          example: US
         phoneNumber:
           type: string
           pattern: '^\d{3}-\d{3}-\d{4}$'
@@ -849,7 +808,7 @@ components:
         id:
           $ref: '#/components/schemas/MemberId'
         type:
-          $ref: '#/components/schemas/MemberType'
+          $ref: '#/components/schemas/MembersType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -883,7 +842,7 @@ components:
             id:
               $ref: '#/components/schemas/MemberId'
             type:
-              $ref: '#/components/schemas/MemberType'
+              $ref: '#/components/schemas/MembersType'
             attributes:
               $ref: '#/components/schemas/MemberAttributes'
     BorrowSetResult:
@@ -900,7 +859,7 @@ components:
         id:
           $ref: '#/components/schemas/BorrowId'
         type:
-          $ref: '#/components/schemas/BorrowType'
+          $ref: '#/components/schemas/BorrowsType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -948,7 +907,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/BorrowType'
+              $ref: '#/components/schemas/BorrowsType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/BorrowPostRequired'
@@ -981,7 +940,7 @@ components:
             id:
               $ref: '#/components/schemas/BorrowId'
             type:
-              $ref: '#/components/schemas/BorrowType'
+              $ref: '#/components/schemas/BorrowsType'
             attributes:
               $ref: '#/components/schemas/BorrowAttributes'
     Meta:
