@@ -552,10 +552,10 @@ components:
       type: string
       description: Book ID
       example: '26'
-    BooksType:
+    BookType:
       type: string
       enum:
-        - book
+        - books
     BookAvailable:
       type: string
       nullable: false
@@ -571,10 +571,10 @@ components:
       type: string
       description: Member ID
       example: '001'
-    MembersType:
+    MemberType:
       type: string
       enum:
-        - member
+        - members
     MembershipStatus:
       type: string
       nullable: false
@@ -591,10 +591,10 @@ components:
       type: string
       description: Borrow ID
       example: bo123
-    BorrowsType:
+    BorrowType:
       type: string
       enum:
-        - borrow
+        - borrows
     BorrowReturnDate:
       type: string
       format: date
@@ -621,7 +621,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/BooksType'
+              $ref: '#/components/schemas/BookType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/BookPostRequired'
@@ -683,7 +683,7 @@ components:
         id:
           $ref: '#/components/schemas/BookId'
         type:
-          $ref: '#/components/schemas/BooksType'
+          $ref: '#/components/schemas/BookType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -717,7 +717,7 @@ components:
             id:
               $ref: '#/components/schemas/BookId'
             type:
-              $ref: '#/components/schemas/BooksType'
+              $ref: '#/components/schemas/BookType'
             attributes:
               $ref: '#/components/schemas/BookAttributes'
     MemberPostBody:
@@ -734,7 +734,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/MembersType'
+              $ref: '#/components/schemas/MemberType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/MemberPostRequired'
@@ -808,7 +808,7 @@ components:
         id:
           $ref: '#/components/schemas/MemberId'
         type:
-          $ref: '#/components/schemas/MembersType'
+          $ref: '#/components/schemas/MemberType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -842,7 +842,7 @@ components:
             id:
               $ref: '#/components/schemas/MemberId'
             type:
-              $ref: '#/components/schemas/MembersType'
+              $ref: '#/components/schemas/MemberType'
             attributes:
               $ref: '#/components/schemas/MemberAttributes'
     BorrowSetResult:
@@ -859,7 +859,7 @@ components:
         id:
           $ref: '#/components/schemas/BorrowId'
         type:
-          $ref: '#/components/schemas/BorrowsType'
+          $ref: '#/components/schemas/BorrowType'
         links:
           $ref: '#/components/schemas/SelfLink'
         attributes:
@@ -907,7 +907,7 @@ components:
           additionalProperties: false
           properties:
             type:
-              $ref: '#/components/schemas/BorrowsType'
+              $ref: '#/components/schemas/BorrowType'
             attributes:
               allOf:
                 - $ref: '#/components/schemas/BorrowPostRequired'
@@ -940,7 +940,7 @@ components:
             id:
               $ref: '#/components/schemas/BorrowId'
             type:
-              $ref: '#/components/schemas/BorrowsType'
+              $ref: '#/components/schemas/BorrowType'
             attributes:
               $ref: '#/components/schemas/BorrowAttributes'
     Meta:
