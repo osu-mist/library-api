@@ -88,8 +88,6 @@ CREATE TABLE members (
 ```sql
 INSERT INTO members (member_id, first_name, last_name, email, address, city, state, country, phone_number, status)
 VALUES
-INSERT INTO members (member_id, first_name, last_name, email, address, city, state, country, phone_number, status)
-VALUES
   ('M001', 'Alex', 'Taylor', 'alex.taylor@example.com', '123 Oak St', 'New York City', 'NY', 'USA', '555-123-4567', 'active'),
   ('M002', 'Jordan', 'Lee', 'jordan.lee@example.com', '456 Maple Ave', 'Los Angeles', 'CA', 'USA', '555-987-6543', 'active'),
   ('M003', 'Sasha', 'Chen', 'sasha.chen@example.com', '789 Elm Rd', 'Chicago', 'IL', 'USA', '555-111-2222', 'active'),
