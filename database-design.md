@@ -1,6 +1,6 @@
 # Oracle Database Schema for Library API
 
-## Table: books
+## Table: library_api_books
 
 | Column Name       | Data Type   | Constraints                             | Description                              |
 |-------------------|-------------|-----------------------------------------|------------------------------------------|
@@ -13,9 +13,9 @@
 | description       | VARCHAR2(500)|                                         | Description or summary of the book.      |
 | available         | VARCHAR2(5) | CHECK (available IN ('true', 'false')) | Availability of the book (true/false).   |
 
-## Generate books table in SQL:
+## Generate library_api_books table in SQL:
 ```sql
-CREATE TABLE books (
+CREATE TABLE library_api_books (
   book_id VARCHAR2(50) PRIMARY KEY,
   title VARCHAR2(255) NOT NULL,
   author VARCHAR2(255) NOT NULL,
@@ -27,9 +27,9 @@ CREATE TABLE books (
 );
 ```
 
-## Sample Data for books table:
+## Sample Data for library_api_books table:
 ```sql
-INSERT INTO books (book_id, title, author, publication_year, isbn, genre, description, available)
+INSERT INTO library_api_books (book_id, title, author, publication_year, isbn, genre, description, available)
 VALUES
   ('B001', 'The Great Gatsby', 'F. Scott Fitzgerald', '1925', '9780743273565', 'Classic', 'A tale of the Jazz Age', 'true'),
   ('B002', 'To Kill a Mockingbird', 'Harper Lee', '1960', '9780061120084', 'Fiction', 'A story about racial injustice', 'true'),
@@ -43,17 +43,17 @@ VALUES
   ('B010', 'The Hobbit', 'J.R.R. Tolkien', '1937', '9780547928227', 'Fantasy', 'The adventure of Bilbo Baggins', 'true');
 ```
 
-## Empty books table:
+## Empty library_api_books table:
 ```sql
-TRUNCATE TABLE books;
+TRUNCATE TABLE library_api_books;
 ```
 
-## Drop books table with schema:
+## Drop library_api_books table with schema:
 ```sql
-DROP TABLE books;
+DROP TABLE library_api_books;
 ```
 
-## Table: members
+## Table: library_api_members
 
 | Column Name       | Data Type   | Constraints                             | Description                              |
 |-------------------|-------------|-----------------------------------------|------------------------------------------|
@@ -68,9 +68,9 @@ DROP TABLE books;
 | phone_number      | VARCHAR2(15)| NOT NULL CHECK (REGEXP_LIKE(phone_number, '^\d{3}-\d{3}-\d{4}$')) | Phone number of the member.       |
 | status            | VARCHAR2(10)| CHECK (status IN ('active', 'suspended', 'expired')) | Membership status of the member.  |
 
-## Generate members table in SQL:
+## Generate library_api_members table in SQL:
 ```sql
-CREATE TABLE members (
+CREATE TABLE library_api_members (
   member_id VARCHAR2(50) PRIMARY KEY,
   first_name VARCHAR2(100) NOT NULL,
   last_name VARCHAR2(100) NOT NULL,
@@ -84,9 +84,9 @@ CREATE TABLE members (
 );
 ```
 
-## Sample Data for members table:
+## Sample Data for library_api_members table:
 ```sql
-INSERT INTO members (member_id, first_name, last_name, email, address, city, state, country, phone_number, status)
+INSERT INTO library_api_members (member_id, first_name, last_name, email, address, city, state, country, phone_number, status)
 VALUES
   ('M001', 'Alex', 'Taylor', 'alex.taylor@example.com', '123 Oak St', 'New York City', 'NY', 'USA', '555-123-4567', 'active'),
   ('M002', 'Jordan', 'Lee', 'jordan.lee@example.com', '456 Maple Ave', 'Los Angeles', 'CA', 'USA', '555-987-6543', 'active'),
@@ -100,34 +100,34 @@ VALUES
   ('M010', 'Jordan', 'Connor', 'jordan.connor@example.com', '876 Oak Rd', 'Atlanta', 'GA', 'USA', '555-777-2222', 'active');
 ```
 
-## Empty members table:
+## Empty library_api_members table:
 ```sql
-TRUNCATE TABLE members;
+TRUNCATE TABLE library_api_members;
 ```
 
-## Drop members table with schema:
+## Drop library_api_members table with schema:
 ```sql
-DROP TABLE members;
+DROP TABLE library_api_members;
 ```
 
-## Table: borrows
+## Table: library_api_borrows
 
 | Column Name       | Data Type   | Constraints                             | Description                              |
 |-------------------|-------------|-----------------------------------------|------------------------------------------|
 | borrow_id         | VARCHAR2(50)| PRIMARY KEY                             | Unique identifier for the borrow record. |
-| book_id           | VARCHAR2(50)| REFERENCES books(book_id)               | Foreign key to book_id in books table.   |
-| member_id         | VARCHAR2(50)| REFERENCES members(member_id)           | Foreign key to member_id in members table.|
+| book_id           | VARCHAR2(50)| REFERENCES library_api_books(book_id)               | Foreign key to book_id in library_api_books table.   |
+| member_id         | VARCHAR2(50)| REFERENCES library_api_members(member_id)           | Foreign key to member_id in library_api_members table.|
 | borrow_date       | DATE        | NOT NULL                                | Date when the book was borrowed.         |
 | due_date          | DATE        | NOT NULL                                | Due date for returning the book.         |
 | return_date       | DATE        |                                         | Date when the book was returned.         |
 | status            | VARCHAR2(10)| CHECK (status IN ('ongoing', 'returned', 'overdue')) | Borrow status of the book.       |
 
-## Generate borrows table in SQL:
+## Generate library_api_borrows table in SQL:
 ```sql
-CREATE TABLE borrows (
+CREATE TABLE library_api_borrows (
   borrow_id VARCHAR2(50) PRIMARY KEY,
-  book_id VARCHAR2(50) REFERENCES books(book_id),
-  member_id VARCHAR2(50) REFERENCES members(member_id),
+  book_id VARCHAR2(50) REFERENCES library_api_books(book_id),
+  member_id VARCHAR2(50) REFERENCES library_api_members(member_id),
   borrow_date DATE NOT NULL,
   due_date DATE NOT NULL,
   return_date DATE,
@@ -135,9 +135,9 @@ CREATE TABLE borrows (
 );
 ```
 
-## Sample Data for borrows table:
+## Sample Data for library_api_borrows table:
 ```sql
-INSERT INTO borrows (borrow_id, book_id, member_id, borrow_date, due_date, return_date, status)
+INSERT INTO library_api_borrows (borrow_id, book_id, member_id, borrow_date, due_date, return_date, status)
 VALUES
   ('BR001', 'B001', 'M001', TO_DATE('2023-07-01', 'YYYY-MM-DD'), TO_DATE('2023-07-15', 'YYYY-MM-DD'), TO_DATE('2023-07-10', 'YYYY-MM-DD'), 'returned'),
   ('BR002', 'B002', 'M002', TO_DATE('2023-07-02', 'YYYY-MM-DD'), TO_DATE('2023-07-16', 'YYYY-MM-DD'), NULL, 'ongoing'),
@@ -151,12 +151,12 @@ VALUES
   ('BR010', 'B010', 'M010', TO_DATE('2023-07-10', 'YYYY-MM-DD'), TO_DATE('2023-07-24', 'YYYY-MM-DD'), TO_DATE('2023-07-21', 'YYYY-MM-DD'), 'returned');
 ```
 
-## Empty borrows table:
+## Empty library_api_borrows table:
 ```sql
-TRUNCATE TABLE borrows;
+TRUNCATE TABLE library_api_borrows;
 ```
 
-## Drop borrows table with schema:
+## Drop library_api_borrows table with schema:
 ```sql
-DROP TABLE borrows;
+DROP TABLE library_api_borrows;
 ```
