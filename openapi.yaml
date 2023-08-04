@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: Library API
-  description: Get information about books and members of library at OSU.
-  version: v1
+  title: Express API Skeleton
+  description: Skeleton for Express APIs
+  version: v2
   license:
     name: GNU Affero General Public License Version 3
     url: http://www.gnu.org/licenses/agpl-3.0.en.html
@@ -12,461 +12,108 @@ info:
     email: isdataarchitecture@oregonstate.edu
 externalDocs:
   description: GitHub Repository
-  url: https://github.com/osu-mist/library-api
+  url: https://github.com/osu-mist/express-api-skeleton
 servers:
-  - url: https://api.oregonstate.edu/v1
+  - url: https://api.oregonstate.edu/v2
 security:
   - OAuth2:
       - full
 paths:
-  /books:
+  /pets:
     get:
-      summary: Retrieve a list of all books in the library.
+      summary: List all pets
       tags:
-        - books
-      description: Get all books
-      operationId: getBooks
+        - pets
+      description: Get all pets
+      operationId: getPets
       parameters:
         - $ref: '#/components/parameters/pageNumber'
         - $ref: '#/components/parameters/pageSize'
         - in: query
-          name: filter[title]
-          description: Search by book title
+          name: filter[species]
+          description: Search by pet species
           required: false
           schema:
             type: string
-            example: The Alchemist
         - in: query
-          name: filter[author][fuzzy]
-          description: Search by book author.
-          required: false
-          schema:
-            type: string
-            example: Paulo Coelho
-        - in: query
-          name: filter[publicationYear]
-          description: Filter books published on a specific year.
-          required: false
-          schema:
-            type: string
-            pattern: '^\d{4}$'
-            example: '1988'
-        - in: query
-          name: filter[isbn]
-          description: Filter books by International Standard Book Number (ISBN) for the book
-          required: false
-          schema:
-            type: string
-            example: '978-0061122415'
-        - in: query
-          name: filter[available]
-          description: Filter books by availability (true/false).
+          name: filter[hasOwner]
+          description: Filter results if pet has an owner or not
           required: false
           schema:
             type: boolean
         - in: query
-          name: filter[genre]
-          description: Filter books by genre.
+          name: filter[age][gt]
+          description: Filter results by age
           required: false
           schema:
-            type: string
-            example: Fiction
+            type: number
+            format: integer
         - in: query
-          name: filter[description][fuzzy]
-          description: Search by book description.
+          name: filter[age][lt]
+          description: Filter results by age
           required: false
           schema:
-            type: string
-            example: The Alchemist follows the journey of an Andalusian shepherd
+            type: number
+            format: integer
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookSetResult'
+                $ref: '#/components/schemas/PetSetResult'
         '400':
           $ref: '#/components/responses/400'
         '500':
           $ref: '#/components/responses/500'
     post:
-      summary: Add a new book to library
+      summary: Add a new pet
       tags:
-        - books
-      operationId: postBook
+        - pets
+      operationId: postPet
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookPostBody'
+              $ref: '#/components/schemas/PetPostBody'
       responses:
         '201':
-          description: Book successfully created
+          description: Pet successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookResult'
+                $ref: '#/components/schemas/PetResult'
         '400':
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /books/{id}:
+  /pets/{id}:
     get:
-      summary: Retrieve details of a specific book.
+      summary: Info for a specific pet
       tags:
-        - books
-      description: Get book by unique identifier.
-      operationId: getBookById
+        - pets
+      description: Get pet by unique ID
+      operationId: getPetById
       parameters:
-        - $ref: '#/components/parameters/bookId'
+        - name: id
+          in: path
+          description: Unique Pet ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookResult'
+                $ref: '#/components/schemas/PetResult'
         '404':
           $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-    patch:
-      summary: Update details of a specific book.
-      tags:
-        - books
-      description: Update a book by unique identifier.
-      operationId: updateBookById
-      parameters:
-        - $ref: '#/components/parameters/bookId'
-      requestBody:
-        required: true
-        description: patch body for a book
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BookPatchBody'
-      responses:
-        '200':
-          description: Details of the updated book.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '409':
-          $ref: '#/components/responses/409'
-        '500':
-          $ref: '#/components/responses/500'
-          
-  /members:
-    get:
-      summary: Retrieve a list of all library members.
-      tags:
-        - members
-      description: Get all Members
-      operationId: getMembers
-      parameters:
-        - $ref: '#/components/parameters/pageNumber'
-        - $ref: '#/components/parameters/pageSize'
-        - in: query
-          name: filter[firstName]
-          description: Search by member first name.
-          required: false
-          schema:
-            type: string
-            example: John
-        - in: query
-          name: filter[lastName]
-          description: Search by member last name.
-          required: false
-          schema:
-            type: string
-            example: Doe
-        - in: query
-          name: filter[email]
-          description: Search by member email.
-          required: false
-          schema:
-            type: string
-            example: 'john.doe@example.com'
-        - in: query
-          name: filter[address][fuzzy]
-          description: Search by member street address.
-          required: false
-          schema:
-            type: string
-            example: 123 Main Street
-        - in: query
-          name: filter[city]
-          description: Search by the city of member.
-          required: false
-          schema:
-            type: string
-            example: Corvallis
-        - in: query
-          name: filter[state]
-          description: Search by the state of member.
-          required: false
-          schema:
-            type: string
-            pattern: '^[A-Z]{2}$'
-            example: OR
-        - in: query
-          name: filter[country]
-          description: Search by the country of member.
-          required: false
-          schema:
-            type: string
-            example: US
-        - in: query
-          name: filter[phoneNumber]
-          description: Search by member phone number.
-          required: false
-          schema:
-            type: string
-            pattern: '^\d{3}-\d{3}-\d{4}$'
-            example: '555-123-4567'
-        - in: query
-          name: filter[status]
-          description: Filter members by membership status.
-          required: false
-          schema:
-            type: string
-            allOf:
-             - $ref: '#/components/schemas/MemberStatusEnum'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MemberSetResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '500':
-          $ref: '#/components/responses/500'
-    post:
-      summary: Add a new member to the library.
-      tags:
-        - members
-      operationId: postMember
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MemberPostBody'
-      responses:
-        '201':
-          description: Member successfully created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemberResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '409':
-          $ref: '#/components/responses/409'
-        '500':
-          $ref: '#/components/responses/500'
-  /members/{id}:
-    get:
-      summary: Retrieve details of a specific member.
-      tags:
-        - members
-      description: Get Member by unique identifier.
-      operationId: getMemberById
-      parameters:
-        - $ref: '#/components/parameters/memberId'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemberResult'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-    patch:
-      summary: Update details of a specific member.
-      tags:
-        - members
-      description: Update a member by unique identifier.
-      operationId: updateMemberById
-      parameters:
-        - $ref: '#/components/parameters/memberId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MemberPatchBody'
-      responses:
-        '200':
-          description: Details of the updated member.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MemberResult'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-  /borrows:
-    get:
-      summary: Retrieve a list of all borrowed books from the library.
-      tags:
-        - borrows
-      description: Get all Borrowed Books
-      operationId: getBorrows
-      parameters:
-        - $ref: '#/components/parameters/pageNumber'
-        - $ref: '#/components/parameters/pageSize'
-        - in: query
-          name: filter[bookId]
-          description: Search by book ID borrowed.
-          required: false
-          schema:
-            type: string
-            example: '26'
-        - in: query
-          name: filter[memberId]
-          description: Search by member ID who borrowed the book.
-          required: false
-          schema:
-            type: string
-            example: '001'
-        - in: query
-          name: filter[borrowDate]
-          description: Filter books borrowed on a specific date.
-          required: false
-          schema:
-            type: string
-            format: date
-            description: The borrow date in the format YYYY-MM-DD.
-            example: '2023-06-30'
-        - in: query
-          name: filter[dueDate]
-          description: Filter books on a specific due date.
-          required: false
-          schema:
-            type: string
-            format: date
-            description: The due date in the format YYYY-MM-DD.
-            example: '2023-07-30'
-        - in: query
-          name: filter[returnDate]
-          description: Filter books returned on a specific date.
-          required: false
-          example: '2023-08-30'
-          schema:
-            type: string
-            format: date
-            description: The return date in the format YYYY-MM-DD.
-        - in: query
-          name: filter[status]
-          description: Filter books by borrowing status.
-          required: false
-          schema:
-            type: string
-            allOf:
-              - $ref: '#/components/schemas/BookStatusEnum'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BorrowSetResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '500':
-          $ref: '#/components/responses/500'
-    post:
-      summary: Borrow a book against a specific member.
-      tags:
-        - borrows
-      operationId: postBorrowBook
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BorrowPostBody'
-      responses:
-        '201':
-          description: The newly borrowed book.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BorrowResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '409':
-          $ref: '#/components/responses/409'
-        '500':
-          $ref: '#/components/responses/500'
-  /borrows/{id}:
-    get:
-      summary: Retrieve details of a specific borrowed book.
-      tags:
-        - borrows
-      description: Get a Borrowed Book by unique identifier.
-      operationId: getBorrowBookById
-      parameters:
-        - $ref: '#/components/parameters/borrowId'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BorrowResult'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-    patch:
-      summary: Update details of a specific borrowed book.
-      tags:
-        - borrows
-      description: Update a borrowed book transaction by a unique identifier.
-      operationId: updateBorrowBookById
-      parameters:
-        - $ref: '#/components/parameters/borrowId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BorrowPatchBody'
-      responses:
-        '200':
-          description: Details of the updated borrowed book.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BorrowResult'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '409':
-          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
 components:
@@ -498,30 +145,6 @@ components:
         minimum: 1
         maximum: 500
         default: 25
-    bookId:
-      name: id
-      in: path
-      description: Unique Book ID
-      required: true
-      schema:
-        type: string
-        pattern: '^[A-Za-z0-9-]+$'
-    memberId:
-      name: id
-      in: path
-      description: Unique Member ID
-      required: true
-      schema:
-        type: string
-        pattern: '^[A-Za-z0-9-]+$'
-    borrowId:
-      name: id
-      in: path
-      description: Unique Borrow ID
-      required: true
-      schema:
-        type: string
-        pattern: '^[A-Za-z0-9-]+$'
   responses:
     '400':
       description: Bad request
@@ -548,401 +171,6 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResult'
   schemas:
-    BookId:
-      type: string
-      description: Book ID
-      example: '26'
-    BookType:
-      type: string
-      enum:
-        - books
-    BookAvailable:
-      type: string
-      nullable: false
-      description: Availability of book (true/false).
-      example: true
-    BookStatusEnum:
-      type: string
-      enum:
-        - ongoing
-        - returned
-        - overdue
-    MemberId:
-      type: string
-      description: Member ID
-      example: '001'
-    MemberType:
-      type: string
-      enum:
-        - members
-    MembershipStatus:
-      type: string
-      nullable: false
-      description: Membership status of the member (active/suspended/expired).
-      allOf:
-        - $ref: '#/components/schemas/MemberStatusEnum'
-    MemberStatusEnum:
-      type: string
-      enum:
-        - active
-        - suspended
-        - expired
-    BorrowId:
-      type: string
-      description: Borrow ID
-      example: bo123
-    BorrowType:
-      type: string
-      enum:
-        - borrows
-    BorrowReturnDate:
-      type: string
-      format: date
-      nullable: true
-      description: Returned date of the book
-      example: '2023-08-30'
-    BorrowStatus:
-      type: string
-      nullable: true
-      description: Current borrow status of the book (ongoing/returned/overdue)
-      allOf:
-        - $ref: '#/components/schemas/BookStatusEnum'
-    BookPostBody:
-      type: object
-      required:
-        - data
-      additionalProperties: false
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          additionalProperties: false
-          properties:
-            type:
-              $ref: '#/components/schemas/BookType'
-            attributes:
-              allOf:
-                - $ref: '#/components/schemas/BookPostRequired'
-                - $ref: '#/components/schemas/BookPostAttributes'
-    BookPostRequired:
-      type: object
-      required:
-        - title
-        - author
-        - publicationYear
-        - genre
-    BookPostAttributes:
-      type: object
-      additionalProperties: false
-      properties:
-        title:
-          type: string
-          nullable: false
-          description: Title of book
-          example: The Alchemist
-        author:
-          type: string
-          nullable: false
-          description: Author of book
-          example: Paulo Coelho
-        publicationYear:
-          type: string
-          nullable: false
-          description: Publication year of book
-          pattern: '^\d{4}$'
-          example: '1988'
-        isbn:
-          type: string
-          nullable: true
-          description: International Standard Book Number (ISBN) for the book
-          example: '978-0061122415'
-        genre:
-          type: string
-          nullable: false
-          description: Genre year of book
-          example: Fiction
-        description:
-          type: string
-          nullable: true
-          description: Description or summary of book
-          minLength: 50
-          maxLength: 500
-          example: 'The Alchemist follows the journey of an Andalusian shepherd boy named Santiago...'
-    BookAttributes:
-      allOf:
-        - $ref: '#/components/schemas/BookPostAttributes'
-        - type: object
-          properties:
-            available:
-              $ref: '#/components/schemas/BookAvailable'
-    BookResource:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/BookId'
-        type:
-          $ref: '#/components/schemas/BookType'
-        links:
-          $ref: '#/components/schemas/SelfLink'
-        attributes:
-          $ref: '#/components/schemas/BookAttributes'
-    BookResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-            $ref: '#/components/schemas/BookResource'
-    BookSetResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/BookResource'
-    BookPatchBody:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-          additionalProperties: false
-          properties:
-            id:
-              $ref: '#/components/schemas/BookId'
-            type:
-              $ref: '#/components/schemas/BookType'
-            attributes:
-              $ref: '#/components/schemas/BookAttributes'
-    MemberPostBody:
-      type: object
-      required:
-        - data
-      additionalProperties: false
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          additionalProperties: false
-          properties:
-            type:
-              $ref: '#/components/schemas/MemberType'
-            attributes:
-              allOf:
-                - $ref: '#/components/schemas/MemberPostRequired'
-                - $ref: '#/components/schemas/MemberPostAttributes'
-    MemberPostRequired:
-      type: object
-      required:
-        - firstName
-        - lastName
-        - email
-        - address
-        - city
-        - state
-        - country
-        - phoneNumber
-    MemberPostAttributes:
-      type: object
-      properties:
-        firstName:
-          type: string
-          nullable: false
-          description: First name of member
-          example: John
-        lastName:
-          type: string
-          nullable: false
-          description: Last name of member
-          example: Doe
-        email:
-          type: string
-          nullable: false
-          description: Email of member
-          example: 'john.doe@example.com'
-        address:
-          type: string
-          nullable: false
-          description: Street Address of member
-          example: 123 Main Street
-        city:
-          type: string
-          nullable: false
-          description: City of member
-          example: Corvallis
-        state:
-          type: string
-          nullable: false
-          description: State of member
-          pattern: '^[A-Z]{2}$'
-          example: OR
-        country:
-          type: string
-          nullable: false
-          description: Country of member
-          example: US
-        phoneNumber:
-          type: string
-          pattern: '^\d{3}-\d{3}-\d{4}$'
-          nullable: false
-          description: Phone number of member
-          example: '555-123-4567'
-    MemberAttributes:
-      allOf:
-        - $ref: '#/components/schemas/MemberPostAttributes'
-        - type: object
-          properties:
-            status:
-              $ref: '#/components/schemas/MembershipStatus'
-    MemberResource:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/MemberId'
-        type:
-          $ref: '#/components/schemas/MemberType'
-        links:
-          $ref: '#/components/schemas/SelfLink'
-        attributes:
-          $ref: '#/components/schemas/MemberAttributes'
-    MemberResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-            $ref: '#/components/schemas/MemberResource'
-    MemberSetResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MemberResource'
-    MemberPatchBody:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-          additionalProperties: false
-          properties:
-            id:
-              $ref: '#/components/schemas/MemberId'
-            type:
-              $ref: '#/components/schemas/MemberType'
-            attributes:
-              $ref: '#/components/schemas/MemberAttributes'
-    BorrowSetResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/BorrowResource'
-    BorrowResource:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/BorrowId'
-        type:
-          $ref: '#/components/schemas/BorrowType'
-        links:
-          $ref: '#/components/schemas/SelfLink'
-        attributes:
-          $ref: '#/components/schemas/BorrowAttributes'
-    BorrowAttributes:
-      allOf:
-        - $ref: '#/components/schemas/BorrowPostAttributes'
-        - type: object
-          properties:
-            returnDate:
-              $ref: '#/components/schemas/BorrowReturnDate'
-            status:
-              $ref: '#/components/schemas/BorrowStatus'
-    BorrowPostAttributes:
-      type: object
-      additionalProperties: false
-      properties:
-        bookId:
-          $ref: '#/components/schemas/BookId'
-        memberId:
-          $ref: '#/components/schemas/MemberId'
-        borrowDate:
-          type: string
-          format: date
-          nullable: false
-          description: Borrow date of the book
-          example: '2023-06-30'
-        dueDate:
-          type: string
-          format: date
-          nullable: false
-          description: Due date for returning the book
-          example: '2023-07-30'
-    BorrowPostBody:
-      type: object
-      required:
-        - data
-      additionalProperties: false
-      properties:
-        data:
-          type: object
-          required:
-            - type
-            - attributes
-          additionalProperties: false
-          properties:
-            type:
-              $ref: '#/components/schemas/BorrowType'
-            attributes:
-              allOf:
-                - $ref: '#/components/schemas/BorrowPostRequired'
-                - $ref: '#/components/schemas/BorrowPostAttributes'
-    BorrowPostRequired:
-      type: object
-      required:
-        - bookId
-        - memberId
-        - borrowDate
-        - dueDate
-    BorrowResult:
-      properties:
-        links:
-            $ref: '#/components/schemas/SelfLink'
-        data:
-            $ref: '#/components/schemas/BorrowResource'
-    BorrowPatchBody:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-          additionalProperties: false
-          properties:
-            id:
-              $ref: '#/components/schemas/BorrowId'
-            type:
-              $ref: '#/components/schemas/BorrowType'
-            attributes:
-              $ref: '#/components/schemas/BorrowAttributes'
     Meta:
       properties:
         totalResults:
@@ -987,6 +215,105 @@ components:
           format: uri
           nullable: true
           description: The next page of data
+    PetResource:
+      properties:
+        id:
+          type: string
+          description: A unique ID of pet
+        type:
+          type: string
+          enum:
+            - pet
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        attributes:
+          properties:
+            name:
+              type: string
+              description: Name of pet
+              example: Hedwig
+            owner:
+              type: string
+              description: Name of owner
+              example: Harry Potter
+            species:
+              type: string
+              description: Species of pet
+              example: Owl
+            age:
+              type: number
+              format: integer
+              description: Age of pet
+              example: 5
+            size:
+              type: object
+              properties:
+                length:
+                  type: number
+                  format: float
+                  description: Length in inches
+                  example: 18
+                chest:
+                  type: number
+                  format: float
+                  description: Chest size in inches
+                  example: 16
+                weight:
+                  type: number
+                  format: float
+                  description: Weight in pounds
+                  example: 8
+    PetPostBody:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/PetResource/properties/type'
+            attributes:
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/name'
+                owner:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/owner'
+                species:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/species'
+                age:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/age'
+                size:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/size'
+              required:
+                - name
+                - owner
+                - species
+              additionalProperties: false
+          required:
+            - type
+            - attributes
+          additionalProperties: false
+      required:
+       - data
+      additionalProperties: false
+    PetResult:
+      properties:
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        data:
+          $ref: '#/components/schemas/PetResource'
+    PetSetResult:
+      properties:
+        links:
+          allOf:
+            - $ref: '#/components/schemas/SelfLink'
+            - $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/Meta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PetResource'
     ErrorObject:
       properties:
         status:
