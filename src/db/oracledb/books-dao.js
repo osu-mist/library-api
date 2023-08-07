@@ -1,10 +1,8 @@
 import _ from 'lodash';
 
 import { parseQuery } from 'utils/parse-query';
-import { getConnection, validateOracleDb } from './connection';
 
-import { convertOutBindsToRawResource, getBindParams, outBindParamToPropertyName } from 'utils/bind-params';
-import { GetFilterProcessor } from 'utils/process-get-filters';
+import { getConnection } from './connection';
 
 /**
  * Return a list of books
@@ -15,8 +13,8 @@ import { GetFilterProcessor } from 'utils/process-get-filters';
 const getBooks = async (query) => {
   const connection = await getConnection();
   try {
-    const parsedQuery = parseQuery(query);
-    const { rawBooks } = await connection.execute("SELECT * from library_api_books");
+    const parsedQuery = parseQuery(query); // contrib is changed
+    const { rawBooks } = await connection.execute(parsedQuery);
     return rawBooks;
   } finally {
     connection.close();
@@ -31,22 +29,17 @@ const getBooks = async (query) => {
  *                            is not found
  */
 const getBookById = async (id) => {
-  console.log(id);
   const connection = await getConnection();
-  const qu = "SELECT * from library_api_books where book_id = :bookId";
+  const query = 'SELECT * from library_api_books where book_id = :bookId';
   try {
-    const  {rows}  = await connection.execute(qu, { bookId: id });
+    const { rows } = await connection.execute(query, { bookId: id });
     const rawBooks = rows;
-
     if (_.isEmpty(rawBooks)) {
-      console.log(rawBooks);
       return undefined;
     }
     if (rawBooks.length > 1) {
-      console.log(rawBooks);
       throw new Error('Expect a single object but got multiple results.');
     } else {
-      console.log(rawBooks);
       const [rawBook] = rawBooks;
       return rawBook;
     }
