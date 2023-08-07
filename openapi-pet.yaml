@@ -1,0 +1,347 @@
+openapi: 3.0.0
+info:
+  title: Express API Skeleton
+  description: Skeleton for Express APIs
+  version: v2
+  license:
+    name: GNU Affero General Public License Version 3
+    url: http://www.gnu.org/licenses/agpl-3.0.en.html
+  contact:
+    name: IS Data Architecture Team
+    url: https://is.oregonstate.edu/data-architecture
+    email: isdataarchitecture@oregonstate.edu
+externalDocs:
+  description: GitHub Repository
+  url: https://github.com/osu-mist/express-api-skeleton
+servers:
+  - url: https://api.oregonstate.edu/v2
+security:
+  - OAuth2:
+      - full
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      tags:
+        - pets
+      description: Get all pets
+      operationId: getPets
+      parameters:
+        - $ref: '#/components/parameters/pageNumber'
+        - $ref: '#/components/parameters/pageSize'
+        - in: query
+          name: filter[species]
+          description: Search by pet species
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter[hasOwner]
+          description: Filter results if pet has an owner or not
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: filter[age][gt]
+          description: Filter results by age
+          required: false
+          schema:
+            type: number
+            format: integer
+        - in: query
+          name: filter[age][lt]
+          description: Filter results by age
+          required: false
+          schema:
+            type: number
+            format: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetSetResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      summary: Add a new pet
+      tags:
+        - pets
+      operationId: postPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetPostBody'
+      responses:
+        '201':
+          description: Pet successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+  /pets/{id}:
+    get:
+      summary: Info for a specific pet
+      tags:
+        - pets
+      description: Get pet by unique ID
+      operationId: getPetById
+      parameters:
+        - name: id
+          in: path
+          description: Unique Pet ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]+$'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResult'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.oregonstate.edu/oauth2/token
+          scopes:
+            full: Full access to the API
+  parameters:
+    pageNumber:
+      name: page[number]
+      in: query
+      required: false
+      description: Page number of results
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pageSize:
+      name: page[size]
+      in: query
+      required: false
+      description: Number of results to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 25
+  responses:
+    '400':
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResult'
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResult'
+    '409':
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResult'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResult'
+  schemas:
+    Meta:
+      properties:
+        totalResults:
+          type: integer
+          description: Total number of results
+          example: 10
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 10
+        currentPageNumber:
+          type: integer
+          description: Page number of the returned results
+          example: 1
+        currentPageSize:
+          type: integer
+          description: Number of results per page
+          example: 25
+    SelfLink:
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Self-link of current resource
+    PaginationLinks:
+      properties:
+        first:
+          type: string
+          format: uri
+          description: The first page of data
+        last:
+          type: string
+          format: uri
+          description: The last page of data
+        prev:
+          type: string
+          format: uri
+          nullable: true
+          description: The previous page of data
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: The next page of data
+    PetResource:
+      properties:
+        id:
+          type: string
+          description: A unique ID of pet
+        type:
+          type: string
+          enum:
+            - pet
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        attributes:
+          properties:
+            name:
+              type: string
+              description: Name of pet
+              example: Hedwig
+            owner:
+              type: string
+              description: Name of owner
+              example: Harry Potter
+            species:
+              type: string
+              description: Species of pet
+              example: Owl
+            age:
+              type: number
+              format: integer
+              description: Age of pet
+              example: 5
+            size:
+              type: object
+              properties:
+                length:
+                  type: number
+                  format: float
+                  description: Length in inches
+                  example: 18
+                chest:
+                  type: number
+                  format: float
+                  description: Chest size in inches
+                  example: 16
+                weight:
+                  type: number
+                  format: float
+                  description: Weight in pounds
+                  example: 8
+    PetPostBody:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/PetResource/properties/type'
+            attributes:
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/name'
+                owner:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/owner'
+                species:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/species'
+                age:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/age'
+                size:
+                  $ref: '#/components/schemas/PetResource/properties/attributes/properties/size'
+              required:
+                - name
+                - owner
+                - species
+              additionalProperties: false
+          required:
+            - type
+            - attributes
+          additionalProperties: false
+      required:
+       - data
+      additionalProperties: false
+    PetResult:
+      properties:
+        links:
+          $ref: '#/components/schemas/SelfLink'
+        data:
+          $ref: '#/components/schemas/PetResource'
+    PetSetResult:
+      properties:
+        links:
+          allOf:
+            - $ref: '#/components/schemas/SelfLink'
+            - $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/Meta'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PetResource'
+    ErrorObject:
+      properties:
+        status:
+          type: string
+          description: HTTP status code
+          example: '123'
+        title:
+          type: string
+          description: A short, user readable summary of the error
+          example: Not Found
+        code:
+          type: string
+          description: An application-specific error code
+          example: '1234'
+        detail:
+          type: string
+          description: A long description of the error that may contain instance-specific
+            details
+        links:
+          properties:
+            about:
+              type: string
+              format: uri
+              description: A link to further information about the error
+              example: https://developer.oregonstate.edu/documentation/error-reference#1234
+    ErrorResult:
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorObject'

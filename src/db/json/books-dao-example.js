@@ -37,18 +37,18 @@ const getPets = async (query) => {
 };
 
 /**
- * Return a specific pet by unique ID
+ * Return a specific book by unique ID
  *
- * @param {string} id Unique pet ID
- * @returns {Promise} Promise object represents a specific pet
+ * @param {string} id Unique book ID
+ * @returns {Promise} Promise object represents a specific book
  */
-const getPetById = async (id) => {
-  const rawPets = readJsonFile(dbPath).pets;
-  const rawPet = _.find(rawPets, { id });
-  if (!rawPet) {
+const getBookById = async (id) => {
+  const rawBooks = readJsonFile(dbPath).books;
+  const rawBook = _.find(rawBooks, { id });
+  if (!rawBook) {
     return undefined;
   }
-  return rawPet;
+  return rawBook;
 };
 
 /**
@@ -77,6 +77,6 @@ const postPet = async (body) => {
 
 export {
   getPets,
-  getPetById,
+  getBookById,
   postPet,
 };
