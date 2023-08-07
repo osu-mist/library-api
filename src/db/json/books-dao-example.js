@@ -13,7 +13,7 @@ const { dbPath } = config.get('dataSources.json');
  * @param {object} query Query parameters
  * @returns {Promise} Promise object represents a list of pets
  */
-const getPets = async (query) => {
+const getBooks = async (query) => {
   let rawPets = readJsonFile(dbPath).pets;
   const parsedQuery = parseQuery(query);
   const { species, hasOwner, age } = parsedQuery;
@@ -61,7 +61,7 @@ const getBookById = async (id) => {
  * @param {object} body Request body
  * @returns {Promise} Promise object represents the posted pet
  */
-const postPet = async (body) => {
+const postBook = async (body) => {
   // Read DB
   const rawPets = readJsonFile(dbPath).pets;
   const newPet = body.data.attributes;
@@ -76,7 +76,7 @@ const postPet = async (body) => {
 };
 
 export {
-  getPets,
+  getBooks,
   getBookById,
-  postPet,
+  postBook,
 };

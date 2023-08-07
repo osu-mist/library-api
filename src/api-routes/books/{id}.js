@@ -1,5 +1,5 @@
 import { errorBuilder, errorHandler } from 'errors/errors';
-import { getBookById } from '../../db/json/books-dao-example';
+import { getBookById } from '../../db/oracledb/books-dao';
 import { serializeBook } from '../../serializers/books-serializer';
 
 /**
@@ -13,7 +13,7 @@ const get = async (req, res) => {
     const rawBook = await getBookById(id);
     if (!rawBook) {
       errorBuilder(res, 404, 'A book with the specified ID was not found.');
-    } else { 
+    } else {
       const result = serializeBook(rawBook, req);
       res.send(result);
     }
