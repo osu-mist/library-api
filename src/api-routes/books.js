@@ -1,5 +1,5 @@
 import { errorHandler } from 'errors/errors';
-import { getBooks, postBook } from '../db/json/books-dao-example';
+import { getBooks, postBook } from '../db/oracledb/books-dao';
 import { serializeBook, serializeBooks } from '../serializers/books-serializer';
 
 /**
@@ -26,7 +26,7 @@ const post = async (req, res) => {
   try {
     const rawBook = await postBook(req.body);
     const result = serializeBook(rawBook, req);
-    res.set('Location', result.data.links.self);
+    res.set('books', result.data.links.self);
     res.status(201).send(result);
   } catch (err) {
     errorHandler(res, err);

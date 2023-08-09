@@ -65,11 +65,11 @@ const serializeBook = (rawBook, req) => {
   // TODO use req.path
   const baseUrl = req.method === 'POST'
     ? bookResourceUrl
-    : resourcePathLink(bookResourceUrl, rawBook.id);
+    : resourcePathLink(bookResourceUrl, rawBook.book_id);
   const topLevelSelfLink = paramsLink(baseUrl, query);
 
   const serializerArgs = {
-    identifierField: 'id',
+    identifierField: 'book_id',
     resourceKeys: bookResourceKeys,
     resourcePath: bookResourcePath,
     topLevelSelfLink,
@@ -81,5 +81,6 @@ const serializeBook = (rawBook, req) => {
     bookResourceType,
     serializerOptions(serializerArgs),
   ).serialize(rawBook);
+  
 };
 export { serializeBooks, serializeBook };
