@@ -65,6 +65,7 @@ const getBookById = async (id) => {
  *
  * @param {string} id Unique book ID
  * @param {object} updateData Data to update
+ * @param {object} existingBook Exisitng book to update
  * @returns {Promise<object>} Promise object represents the updated book or undefined if not found
  */
 const updateBookById = async (id, updateData, existingBook) => {
@@ -108,10 +109,9 @@ const updateBookById = async (id, updateData, existingBook) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       return updatedBookData;
-    } else {
-      await connection.rollback();
-      throw new Error('Failed to update the book.');
     }
+    await connection.rollback();
+    throw new Error('Failed to update the book.');
   } finally {
     connection.close();
   }
@@ -180,4 +180,9 @@ const postBook = async (body) => {
   }
 };
 
-export { getBooks, getBookById, updateBookById, postBook };
+export {
+  getBooks,
+  getBookById,
+  updateBookById,
+  postBook,
+};
