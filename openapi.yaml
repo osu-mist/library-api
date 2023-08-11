@@ -135,6 +135,36 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+    patch:
+      summary: Update details of a specific book.
+      tags:
+        - books
+      description: Update a book by unique identifier.
+      operationId: updateBookById
+      parameters:
+        - $ref: '#/components/parameters/bookId'
+      requestBody:
+        required: true
+        description: patch body for a book
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookPatchBody'
+      responses:
+        '200':
+          description: Details of the updated book.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResult'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
           
   /members:
     get:

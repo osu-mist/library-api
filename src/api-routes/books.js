@@ -26,14 +26,10 @@ const post = async (req, res) => {
   try {
     const rawBook = await postBook(req.body);
     const result = serializeBook(rawBook, req);
-    res.set('books', result.data.links.self);
     res.status(201).send(result);
   } catch (err) {
     errorHandler(res, err);
   }
 };
 
-export {
-  get,
-  post,
-};
+export { get, post };

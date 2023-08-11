@@ -6,8 +6,6 @@ import { parseQuery } from 'utils/parse-query';
 
 import { getConnection } from './connection';
 
-
-
 /**
  * Return a list of books
  *
@@ -35,15 +33,13 @@ const getBooks = async (query) => {
 const getBookById = async (id) => {
   const connection = await getConnection();
   const query = `
-  SELECT *
-  FROM library_api_books
-  WHERE book_id = :bookId
+    SELECT *
+    FROM library_api_books
+    WHERE book_id = :bookId
   `;
 
   try {
-    const bindVars = {
-      bookId: id
-    };
+    const bindVars = { bookId: id };
 
     const { rows } = await connection.execute(query, bindVars);
     if (_.isEmpty(rows)) {
@@ -99,7 +95,8 @@ const postBook = async (body) => {
         :description,
         :available
       )
-      RETURNING book_id INTO :insertedId`; // Fetch the inserted ID
+      RETURNING book_id INTO :insertedId
+    `; // Fetch the inserted ID
 
     const bindVars = {
       title: newBookData.title,
@@ -109,19 +106,18 @@ const postBook = async (body) => {
       genre: newBookData.genre,
       description: newBookData.description,
       available: newBookData.available,
-      insertedId: { dir: oracledb.BIND_OUT, type: oracledb.STRING } // Define the output parameter
+      insertedId: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
     };
 
     const result = await connection.execute(insertQuery, bindVars);
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newBookData.book_id = result.outBinds.insertedId; // Retrieve the inserted ID from the output parameter
+      newBookData.book_id = result.outBinds.insertedId;
       return newBookData;
-    } else {
-      await connection.rollback();
-      throw new Error('Failed to insert the book.');
     }
+    await connection.rollback();
+    throw new Error('Failed to insert the book.');
   } finally {
     connection.close();
   }

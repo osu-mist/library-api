@@ -81,6 +81,5 @@ const serializeBook = (rawBook, req) => {
     bookResourceType,
     serializerOptions(serializerArgs),
   ).serialize(rawBook);
-  
 };
 export { serializeBooks, serializeBook };

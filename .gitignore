@@ -88,3 +88,9 @@ venv.bak/
 
 # Transpiled Babel code and source maps
 dist/**
+
+# Pets
+# Ignore files containing "pet," "pets," or "Pets" in the name
+*pet*
+*pets*
+*Pets*
