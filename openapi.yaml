@@ -19,7 +19,7 @@ security:
   - OAuth2:
       - full
 paths:
-  /books:
+  /library/books:
     get:
       summary: Retrieve a list of all books in the library.
       tags:
@@ -115,7 +115,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /books/{id}:
+  /library/books/{id}:
     get:
       summary: Retrieve details of a specific book.
       tags:
@@ -166,7 +166,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
           
-  /members:
+  /library/members:
     get:
       summary: Retrieve a list of all library members.
       tags:
@@ -279,7 +279,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /members/{id}:
+  /library/members/{id}:
     get:
       summary: Retrieve details of a specific member.
       tags:
@@ -324,7 +324,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-  /borrows:
+  /library/borrows:
     get:
       summary: Retrieve a list of all borrowed books from the library.
       tags:
@@ -420,7 +420,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /borrows/{id}:
+  /library/borrows/{id}:
     get:
       summary: Retrieve details of a specific borrowed book.
       tags:

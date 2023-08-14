@@ -1,6 +1,6 @@
 import { errorHandler } from 'errors/errors';
-import { getBooks, postBook } from '../db/oracledb/books-dao';
-import { serializeBook, serializeBooks } from '../serializers/books-serializer';
+import { getBooks, postBook } from '../../db/oracledb/books-dao';
+import { serializeBook, serializeBooks } from '../../serializers/books-serializer';
 
 /**
  * Get books

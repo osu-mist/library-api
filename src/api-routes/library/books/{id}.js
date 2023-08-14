@@ -1,6 +1,6 @@
 import { errorBuilder, errorHandler } from 'errors/errors';
-import { getBookById, updateBookById } from '../../db/oracledb/books-dao';
-import { serializeBook } from '../../serializers/books-serializer';
+import { getBookById, updateBookById } from '../../../db/oracledb/books-dao';
+import { serializeBook } from '../../../serializers/books-serializer';
 
 /**
  * Get book by unique ID
