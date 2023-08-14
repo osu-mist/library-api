@@ -108,7 +108,7 @@ const updateBookById = async (id, updateData, existingBook) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      return updatedBookData;
+      return getBookById(id);
     }
     await connection.rollback();
     throw new Error('Failed to update the book.');
@@ -171,6 +171,7 @@ const postBook = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newBookData.book_id = result.outBinds.insertedId;
+
       return newBookData;
     }
     await connection.rollback();
