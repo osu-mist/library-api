@@ -39,13 +39,8 @@ const patch = async (req, res) => {
     } else {
       const updateData = req.body.data.attributes;
       const updatedBook = await updateBookById(id, updateData, existingBook);
-
-      if (!updatedBook) {
-        errorBuilder(res, 500, 'Failed to update the book.');
-      } else {
-        const result = serializeBook(updatedBook, req);
-        res.send(result);
-      }
+      const result = serializeBook(updatedBook, req);
+      res.send(result);
     }
   } catch (err) {
     errorHandler(res, err);

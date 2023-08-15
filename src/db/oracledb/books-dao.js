@@ -72,10 +72,6 @@ const updateBookById = async (id, updateData, existingBook) => {
   const connection = await getConnection();
 
   try {
-    if (!existingBook) {
-      return undefined;
-    }
-
     const updatedBookData = {
       ...existingBook,
       ...updateData,
