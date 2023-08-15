@@ -107,7 +107,7 @@ const updateBookById = async (id, updateData, existingBook) => {
       return getBookById(id);
     }
     await connection.rollback();
-    throw new Error('Failed to update the book.');
+    throw new Error(`Failed to update the book. Error: ${result.errorNum}`);
   } finally {
     connection.close();
   }
@@ -171,7 +171,7 @@ const postBook = async (body) => {
       return newBookData;
     }
     await connection.rollback();
-    throw new Error('Failed to insert the book.');
+    throw new Error(`Failed to insert the book. Error: ${result.errorNum}`);
   } finally {
     connection.close();
   }
