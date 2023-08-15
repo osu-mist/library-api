@@ -19,7 +19,7 @@ security:
   - OAuth2:
       - full
 paths:
-  /books:
+  /library/books:
     get:
       summary: Retrieve a list of all books in the library.
       tags:
@@ -115,7 +115,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /books/{id}:
+  /library/books/{bookId}:
     get:
       summary: Retrieve details of a specific book.
       tags:
@@ -166,7 +166,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
           
-  /members:
+  /library/members:
     get:
       summary: Retrieve a list of all library members.
       tags:
@@ -279,7 +279,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /members/{id}:
+  /library/members/{memberId}:
     get:
       summary: Retrieve details of a specific member.
       tags:
@@ -324,7 +324,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-  /borrows:
+  /library/borrows:
     get:
       summary: Retrieve a list of all borrowed books from the library.
       tags:
@@ -420,7 +420,7 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-  /borrows/{id}:
+  /library/borrows/{borrowId}:
     get:
       summary: Retrieve details of a specific borrowed book.
       tags:
@@ -499,7 +499,7 @@ components:
         maximum: 500
         default: 25
     bookId:
-      name: id
+      name: bookId
       in: path
       description: Unique Book ID
       required: true
@@ -507,7 +507,7 @@ components:
         type: string
         pattern: '^[A-Za-z0-9-]+$'
     memberId:
-      name: id
+      name: memberId
       in: path
       description: Unique Member ID
       required: true
@@ -515,7 +515,7 @@ components:
         type: string
         pattern: '^[A-Za-z0-9-]+$'
     borrowId:
-      name: id
+      name: borrowId
       in: path
       description: Unique Borrow ID
       required: true

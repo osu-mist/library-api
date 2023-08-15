@@ -61,6 +61,59 @@ const getBookById = async (id) => {
 };
 
 /**
+ * Update a specific book by unique ID
+ *
+ * @param {string} id Unique book ID
+ * @param {object} updateData Data to update
+ * @param {object} existingBook Exisitng book to update
+ * @returns {Promise<object>} Promise object represents the updated book or undefined if not found
+ */
+const updateBookById = async (id, updateData, existingBook) => {
+  const connection = await getConnection();
+
+  try {
+    const updatedBookData = {
+      ...existingBook,
+      ...updateData,
+    };
+
+    const updateQuery = `
+      UPDATE library_api_books
+      SET title = :title,
+          author = :author,
+          publicationyear = :publicationYear,
+          isbn = :isbn,
+          genre = :genre,
+          description = :description,
+          available = :available
+      WHERE book_id = :bookId
+    `;
+
+    const bindVars = {
+      title: updatedBookData.title,
+      author: updatedBookData.author,
+      publicationYear: updatedBookData.publicationyear,
+      isbn: updatedBookData.isbn,
+      genre: updatedBookData.genre,
+      description: updatedBookData.description,
+      available: updatedBookData.available,
+      bookId: id,
+    };
+
+    const result = await connection.execute(updateQuery, bindVars);
+
+    if (result.rowsAffected === 1) {
+      await connection.commit();
+      return getBookById(id);
+    }
+    await connection.rollback();
+    throw new Error(`Failed to update the book. Error: ${result.errorNum}`);
+  } finally {
+    connection.close();
+  }
+};
+
+/**
  * Posts a new book to the Oracle database
  *
  * Inserts the posted book into the Oracle database.
@@ -114,13 +167,19 @@ const postBook = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newBookData.book_id = result.outBinds.insertedId;
+
       return newBookData;
     }
     await connection.rollback();
-    throw new Error('Failed to insert the book.');
+    throw new Error(`Failed to insert the book. Error: ${result.errorNum}`);
   } finally {
     connection.close();
   }
 };
 
-export { getBooks, getBookById, postBook };
+export {
+  getBooks,
+  getBookById,
+  updateBookById,
+  postBook,
+};

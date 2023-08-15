@@ -11,7 +11,7 @@ const bookResourceType = bookResourceProp.type.enum[0];
 const bookResourceAttributes = bookResourceProp.attributes.allOf;
 const bookCombinedAttributes = _.merge(bookResourceAttributes[0], bookResourceAttributes[1]);
 const bookResourceKeys = _.keys(bookCombinedAttributes.properties);
-const bookResourcePath = 'books';
+const bookResourcePath = 'library/books';
 const bookResourceUrl = resourcePathLink(apiBaseUrl, bookResourcePath);
 
 /**
