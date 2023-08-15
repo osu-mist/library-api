@@ -9,8 +9,8 @@ import { serializeBook } from '../../../serializers/books-serializer';
  */
 const get = async (req, res) => {
   try {
-    const { id } = req.params;
-    const rawBook = await getBookById(id);
+    const { bookId } = req.params;
+    const rawBook = await getBookById(bookId);
     if (!rawBook) {
       errorBuilder(res, 404, 'A book with the specified ID was not found.');
     } else {
@@ -29,16 +29,16 @@ const get = async (req, res) => {
  */
 const patch = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { bookId } = req.params;
 
     // Fetch the existing book
-    const existingBook = await getBookById(id);
+    const existingBook = await getBookById(bookId);
 
     if (!existingBook) {
       errorBuilder(res, 404, 'A book with the specified ID was not found.');
     } else {
       const updateData = req.body.data.attributes;
-      const updatedBook = await updateBookById(id, updateData, existingBook);
+      const updatedBook = await updateBookById(bookId, updateData, existingBook);
       const result = serializeBook(updatedBook, req);
       res.send(result);
     }
