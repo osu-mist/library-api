@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import oracledb from 'oracledb';
 
-import { parseQuery } from 'utils/parse-query';
+import { parseQuery, generateWhereClause } from 'utils/parse-query';
 
 import { getConnection } from './connection';
 
@@ -15,9 +15,27 @@ import { getConnection } from './connection';
 const getBooks = async (query) => {
   const connection = await getConnection();
   try {
-    const parsedQuery = parseQuery(query); // contrib is changed
-    const { rawBooks } = await connection.execute(parsedQuery);
-    return rawBooks;
+    const parsedQuery = parseQuery(query);
+    const whereClause = generateWhereClause(parsedQuery);
+
+    const selectQuery = `
+      SELECT *
+      FROM library_api_books
+      ${whereClause}
+    `;
+
+    delete parsedQuery['page[number]'];
+    delete parsedQuery['page[size]'];
+
+    const { rows } = await connection.execute(selectQuery);
+    const rowsLower = rows.map((item) => {
+      const newItem = {};
+      Object.keys(item).forEach((key) => {
+        newItem[key.toLowerCase()] = item[key];
+      });
+      return newItem;
+    });
+    return rowsLower;
   } finally {
     connection.close();
   }
@@ -48,9 +66,9 @@ const getBookById = async (id) => {
     if (rows.length > 1) {
       throw new Error('Expect a single object but got multiple results.');
     } else {
-      const rawBooksCaps = rows[0];
-      const rawBooks = Object.keys(rawBooksCaps).reduce((result, key) => {
-        result[key.toLowerCase()] = rawBooksCaps[key];
+      const rawBooksLower = rows[0];
+      const rawBooks = Object.keys(rawBooksLower).reduce((result, key) => {
+        result[key.toLowerCase()] = rawBooksLower[key];
         return result;
       }, {});
       return rawBooks;

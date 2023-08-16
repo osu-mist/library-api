@@ -35,4 +35,32 @@ const parseQuery = (query) => {
   return parsedQuery;
 };
 
-export { parseQuery };
+/**
+ * Generate a WHERE clause based on parsed filters
+ *
+ * @param {object} parsedFilters Parsed filter parameters
+ * @returns {string} WHERE clause string
+ */
+const generateWhereClause = (parsedFilters) => {
+  const conditions = Object.keys(parsedFilters).map((key) => {
+    const filter = parsedFilters[key];
+
+    if (typeof filter === 'string') {
+      return `${key} = '${filter}'`;
+    } else if (typeof filter === 'object') {
+      const { operator, value } = filter;
+      return `${key} ${operator} '${value}'`;
+    }
+    // Add a default return value in case none of the conditions match
+    return '';
+  });
+
+  const filteredConditions = conditions.filter(Boolean);
+
+  if (filteredConditions.length > 0) {
+    return `WHERE ${filteredConditions.join(' AND ')}`;
+  }
+  return '';
+};
+
+export { parseQuery, generateWhereClause };
