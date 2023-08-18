@@ -6,6 +6,7 @@ const operatorSymbols = {
   lt: '<',
   lte: '<=',
   neq: '!=',
+  fuzzy: 'LIKE',
 };
 
 /**
@@ -49,9 +50,13 @@ const generateWhereClause = (parsedFilters) => {
       return `${key} = '${filter}'`;
     } else if (typeof filter === 'object') {
       const { operator, value } = filter;
-      return `${key} ${operator} '${value}'`;
+
+      if (operator === 'LIKE') {
+        return `${key} ${operator} '%${value}%'`;
+      } else {
+        return `${key} ${operator} '${value}'`;
+      }
     }
-    // Add a default return value in case none of the conditions match
     return '';
   });
 
