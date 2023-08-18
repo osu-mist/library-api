@@ -16,7 +16,7 @@ const getBooks = async (query) => {
   const connection = await getConnection();
   try {
     const parsedQuery = parseQuery(query);
-    const whereClause = generateWhereClause(parsedQuery);
+    const whereClause = generateWhereClause(parsedQuery).toLowerCase();
 
     const selectQuery = `
       SELECT *
@@ -27,7 +27,8 @@ const getBooks = async (query) => {
     delete parsedQuery['page[number]'];
     delete parsedQuery['page[size]'];
 
-    const { rows } = await connection.execute(selectQuery);
+    const response = await connection.execute(selectQuery);
+    const { rows } = response;
     const rowsLower = rows.map((item) => {
       const newItem = {};
       Object.keys(item).forEach((key) => {
@@ -122,6 +123,7 @@ const updateBookById = async (id, updateData, existingBook) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
+      connection.close();
       return getBookById(id);
     }
     await connection.rollback();

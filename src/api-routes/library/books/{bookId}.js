@@ -39,6 +39,7 @@ const patch = async (req, res) => {
     } else {
       const updateData = req.body.data.attributes;
       const updatedBook = await updateBookById(bookId, updateData, existingBook);
+
       const result = serializeBook(updatedBook, req);
       res.send(result);
     }
