@@ -24,9 +24,6 @@ const getBooks = async (query) => {
       ${whereClause}
     `;
 
-    delete parsedQuery['page[number]'];
-    delete parsedQuery['page[size]'];
-
     const response = await connection.execute(selectQuery);
     const { rows } = response;
     const rowsLower = rows.map((item) => {
