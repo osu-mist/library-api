@@ -36,43 +36,4 @@ const parseQuery = (query) => {
   return parsedQuery;
 };
 
-/**
- * Generates a WHERE clause based on parsed filter parameters.
- *
- * @param {object} parsedFilters Parsed filter parameters.
- * @returns {string} The WHERE clause string for SQL queries.
- */
-const generateWhereClause = (parsedFilters) => {
-  const conditions = Object.keys(parsedFilters).map((key) => {
-    const filter = parsedFilters[key];
-
-    // Check if the filter is a simple string condition
-    // such as: 'key = publicationyear, string filter = 1990'
-    if (typeof filter === 'string') {
-      return `${key} = '${filter}'`;
-    } else if (typeof filter === 'object') {
-      // If the filter is an object, extract operator and value
-      // such as: 'key = author, SQL operator = LIKE, Value = Paulo'
-      const { operator, value } = filter;
-
-      // Handle the LIKE operator for text searching with %
-      if (operator === 'LIKE') {
-        return `${key} ${operator} '%${value}%'`;
-      } else {
-        // For other supported operators from operatorSymbols, create the condition
-        return `${key} ${operator} '${value}'`;
-      }
-    }
-    // Return an empty string for unsupported conditions
-    return '';
-  });
-
-  // Filter out empty conditions and join them with 'AND'
-  const filteredConditions = conditions.filter(Boolean);
-  if (filteredConditions.length > 0) {
-    return `WHERE ${filteredConditions.join(' AND ')}`;
-  }
-  return ''; // Return an empty string if no conditions are provided
-};
-
-export { parseQuery, generateWhereClause };
+export { parseQuery };

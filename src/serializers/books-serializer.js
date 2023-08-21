@@ -33,7 +33,6 @@ const serializeBooks = (rawBooks, req) => {
 
   const pagination = paginate(rawBooks, pageQuery);
   pagination.totalResults = rawBooks.length;
-  rawBooks = pagination.paginatedRows;
 
   // TODO use req.path
   const topLevelSelfLink = paramsLink(bookResourceUrl, query);
