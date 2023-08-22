@@ -6,6 +6,7 @@ const operatorSymbols = {
   lt: '<',
   lte: '<=',
   neq: '!=',
+  fuzzy: 'LIKE',
 };
 
 /**

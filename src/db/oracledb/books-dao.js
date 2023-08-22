@@ -7,7 +7,46 @@ import { parseQuery } from 'utils/parse-query';
 import { getConnection } from './connection';
 
 /**
- * Return a list of books
+ * Generates a WHERE clause based on parsed filter parameters.
+ *
+ * @param {object} parsedFilters Parsed filter parameters.
+ * @returns {string} The WHERE clause string for SQL queries.
+ */
+const generateWhereClause = (parsedFilters) => {
+  const conditions = Object.keys(parsedFilters).map((key) => {
+    const filter = parsedFilters[key];
+
+    // Check if the filter is a simple string condition
+    // such as: 'key = publicationyear, string filter = 1990'
+    if (typeof filter === 'string') {
+      return `${key} = '${filter}'`;
+    } else if (typeof filter === 'object') {
+      // If the filter is an object, extract operator and value
+      // such as: 'key = author, SQL operator = LIKE, Value = Paulo'
+      const { operator, value } = filter;
+
+      // Handle the LIKE operator for text searching with %
+      if (operator === 'LIKE') {
+        return `${key} ${operator} '%${value}%'`;
+      } else {
+        // For other supported operators from operatorSymbols, create the condition
+        return `${key} ${operator} '${value}'`;
+      }
+    }
+    // Return an empty string for unsupported conditions
+    return '';
+  });
+
+  // Filter out empty conditions and join them with 'AND'
+  const filteredConditions = conditions.filter(Boolean);
+  if (filteredConditions.length > 0) {
+    return `WHERE ${filteredConditions.join(' AND ')}`;
+  }
+  return ''; // Return an empty string if no conditions are provided
+};
+
+/**
+ * Return a list of books with pagination
  *
  * @param {object} query Query parameters
  * @returns {Promise<object>[]} Promise object represents a list of books
@@ -15,9 +54,30 @@ import { getConnection } from './connection';
 const getBooks = async (query) => {
   const connection = await getConnection();
   try {
-    const parsedQuery = parseQuery(query); // contrib is changed
-    const { rawBooks } = await connection.execute(parsedQuery);
-    return rawBooks;
+    const parsedQuery = parseQuery(query);
+    const whereClause = generateWhereClause(parsedQuery).toLowerCase();
+
+    const pageNumber = parseInt(parsedQuery['page[number]'], 10) || 1;
+    const perPage = parseInt(parsedQuery['page[size]'], 10) || 25;
+    const offset = (pageNumber - 1) * perPage;
+
+    const selectQuery = `
+      SELECT *
+      FROM library_api_books
+      ${whereClause}
+      OFFSET ${offset} ROWS FETCH NEXT ${perPage} ROWS ONLY
+    `;
+
+    const response = await connection.execute(selectQuery);
+    const { rows } = response;
+    const rowsLower = rows.map((item) => {
+      const newItem = {};
+      Object.keys(item).forEach((key) => {
+        newItem[key.toLowerCase()] = item[key];
+      });
+      return newItem;
+    });
+    return rowsLower;
   } finally {
     connection.close();
   }
@@ -48,9 +108,9 @@ const getBookById = async (id) => {
     if (rows.length > 1) {
       throw new Error('Expect a single object but got multiple results.');
     } else {
-      const rawBooksCaps = rows[0];
-      const rawBooks = Object.keys(rawBooksCaps).reduce((result, key) => {
-        result[key.toLowerCase()] = rawBooksCaps[key];
+      const rawBooksLower = rows[0];
+      const rawBooks = Object.keys(rawBooksLower).reduce((result, key) => {
+        result[key.toLowerCase()] = rawBooksLower[key];
         return result;
       }, {});
       return rawBooks;
@@ -104,6 +164,7 @@ const updateBookById = async (id, updateData, existingBook) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
+      connection.close();
       return getBookById(id);
     }
     await connection.rollback();
