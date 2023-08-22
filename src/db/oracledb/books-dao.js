@@ -150,13 +150,13 @@ const updateBookById = async (id, updateData, existingBook) => {
     `;
 
     const bindVars = {
-      title: updatedBookData.title,
-      author: updatedBookData.author,
-      publicationYear: updatedBookData.publicationyear,
-      isbn: updatedBookData.isbn,
-      genre: updatedBookData.genre,
-      description: updatedBookData.description,
-      available: updatedBookData.available,
+      title: updatedBookData.title.toLowerCase(),
+      author: updatedBookData.author.toLowerCase(),
+      publicationYear: updatedBookData.publicationYear,
+      isbn: updatedBookData.isbn.toLowerCase(),
+      genre: updatedBookData.genre.toLowerCase(),
+      description: updatedBookData.description.toLowerCase(),
+      available: updatedBookData.available.toLowerCase(),
       bookId: id,
     };
 
@@ -186,7 +186,11 @@ const postBook = async (body) => {
   const connection = await getConnection();
 
   try {
-    const newBookData = body.data.attributes;
+    const newBookDataRaw = body.data.attributes;
+    const newBookData = {
+      ...newBookDataRaw,
+      publicationyear: newBookDataRaw.publicationYear,
+    };
     newBookData.available = 'true';
 
     const insertQuery = `
@@ -213,13 +217,13 @@ const postBook = async (body) => {
     `; // Fetch the inserted ID
 
     const bindVars = {
-      title: newBookData.title,
-      author: newBookData.author,
-      publicationYear: newBookData.publicationYear,
-      isbn: newBookData.isbn,
-      genre: newBookData.genre,
-      description: newBookData.description,
-      available: newBookData.available,
+      title: newBookData.title.toLowerCase(),
+      author: newBookData.author.toLowerCase(),
+      publicationyear: newBookData.publicationyear,
+      isbn: newBookData.isbn.toLowerCase(),
+      genre: newBookData.genre.toLowerCase(),
+      description: newBookData.description.toLowerCase(),
+      available: newBookData.available.toLowerCase(),
       insertedId: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
     };
 
@@ -228,8 +232,18 @@ const postBook = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newBookData.book_id = result.outBinds.insertedId;
+      const lowercaseBookData = {
+        book_id: newBookData.book_id,
+        title: newBookData.title.toLowerCase(),
+        author: newBookData.author.toLowerCase(),
+        publicationyear: newBookData.publicationyear,
+        isbn: newBookData.isbn.toLowerCase(),
+        genre: newBookData.genre.toLowerCase(),
+        description: newBookData.description.toLowerCase(),
+        available: newBookData.available.toLowerCase(),
+      };
 
-      return newBookData;
+      return lowercaseBookData;
     }
     await connection.rollback();
     throw new Error(`Failed to insert the book. Error: ${result.errorNum}`);
