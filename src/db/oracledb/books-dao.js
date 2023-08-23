@@ -6,44 +6,7 @@ import { parseQuery } from 'utils/parse-query';
 
 import { getConnection } from './connection';
 
-/**
- * Generates a WHERE clause based on parsed filter parameters.
- *
- * @param {object} parsedFilters Parsed filter parameters.
- * @returns {string} The WHERE clause string for SQL queries.
- */
-const generateWhereClause = (parsedFilters) => {
-  const conditions = Object.keys(parsedFilters).map((key) => {
-    const filter = parsedFilters[key];
-
-    // Check if the filter is a simple string condition
-    // such as: 'key = publicationyear, string filter = 1990'
-    if (typeof filter === 'string') {
-      return `${key} = '${filter}'`;
-    } else if (typeof filter === 'object') {
-      // If the filter is an object, extract operator and value
-      // such as: 'key = author, SQL operator = LIKE, Value = Paulo'
-      const { operator, value } = filter;
-
-      // Handle the LIKE operator for text searching with %
-      if (operator === 'LIKE') {
-        return `${key} ${operator} '%${value}%'`;
-      } else {
-        // For other supported operators from operatorSymbols, create the condition
-        return `${key} ${operator} '${value}'`;
-      }
-    }
-    // Return an empty string for unsupported conditions
-    return '';
-  });
-
-  // Filter out empty conditions and join them with 'AND'
-  const filteredConditions = conditions.filter(Boolean);
-  if (filteredConditions.length > 0) {
-    return `WHERE ${filteredConditions.join(' AND ')}`;
-  }
-  return ''; // Return an empty string if no conditions are provided
-};
+import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from './general-dao';
 
 /**
  * Return a list of books with pagination
@@ -56,28 +19,17 @@ const getBooks = async (query) => {
   try {
     const parsedQuery = parseQuery(query);
     const whereClause = generateWhereClause(parsedQuery).toLowerCase();
-
-    const pageNumber = parseInt(parsedQuery['page[number]'], 10) || 1;
-    const perPage = parseInt(parsedQuery['page[size]'], 10) || 25;
-    const offset = (pageNumber - 1) * perPage;
+    const paginationParams = generatePaginationParams(parsedQuery);
 
     const selectQuery = `
       SELECT *
       FROM library_api_books
       ${whereClause}
-      OFFSET ${offset} ROWS FETCH NEXT ${perPage} ROWS ONLY
+      OFFSET ${paginationParams.offset} ROWS FETCH NEXT ${paginationParams.perPage} ROWS ONLY
     `;
 
-    const response = await connection.execute(selectQuery);
-    const { rows } = response;
-    const rowsLower = rows.map((item) => {
-      const newItem = {};
-      Object.keys(item).forEach((key) => {
-        newItem[key.toLowerCase()] = item[key];
-      });
-      return newItem;
-    });
-    return rowsLower;
+    const { rows } = await connection.execute(selectQuery);
+    return convertKeysToLowercase(rows);
   } finally {
     connection.close();
   }
@@ -109,11 +61,7 @@ const getBookById = async (id) => {
       throw new Error('Expect a single object but got multiple results.');
     } else {
       const rawBooksLower = rows[0];
-      const rawBooks = Object.keys(rawBooksLower).reduce((result, key) => {
-        result[key.toLowerCase()] = rawBooksLower[key];
-        return result;
-      }, {});
-      return rawBooks;
+      return convertKeysToLowercase([rawBooksLower])[0];
     }
   } finally {
     connection.close();
@@ -188,10 +136,14 @@ const postBook = async (body) => {
   try {
     const newBookDataRaw = body.data.attributes;
     const newBookData = {
-      ...newBookDataRaw,
+      title: newBookDataRaw.title.toLowerCase(),
+      author: newBookDataRaw.author.toLowerCase(),
       publicationyear: newBookDataRaw.publicationYear,
+      isbn: newBookDataRaw.isbn.toLowerCase(),
+      genre: newBookDataRaw.genre.toLowerCase(),
+      description: newBookDataRaw.description.toLowerCase(),
+      available: 'true',
     };
-    newBookData.available = 'true';
 
     const insertQuery = `
       INSERT INTO library_api_books (
@@ -217,13 +169,7 @@ const postBook = async (body) => {
     `; // Fetch the inserted ID
 
     const bindVars = {
-      title: newBookData.title.toLowerCase(),
-      author: newBookData.author.toLowerCase(),
-      publicationyear: newBookData.publicationyear,
-      isbn: newBookData.isbn.toLowerCase(),
-      genre: newBookData.genre.toLowerCase(),
-      description: newBookData.description.toLowerCase(),
-      available: newBookData.available.toLowerCase(),
+      ...newBookData,
       insertedId: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
     };
 
@@ -232,18 +178,7 @@ const postBook = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newBookData.book_id = result.outBinds.insertedId;
-      const lowercaseBookData = {
-        book_id: newBookData.book_id,
-        title: newBookData.title.toLowerCase(),
-        author: newBookData.author.toLowerCase(),
-        publicationyear: newBookData.publicationyear,
-        isbn: newBookData.isbn.toLowerCase(),
-        genre: newBookData.genre.toLowerCase(),
-        description: newBookData.description.toLowerCase(),
-        available: newBookData.available.toLowerCase(),
-      };
-
-      return lowercaseBookData;
+      return newBookData;
     }
     await connection.rollback();
     throw new Error(`Failed to insert the book. Error: ${result.errorNum}`);

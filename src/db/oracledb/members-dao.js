@@ -6,44 +6,7 @@ import { parseQuery } from 'utils/parse-query';
 
 import { getConnection } from './connection';
 
-/**
- * Generates a WHERE clause based on parsed filter parameters.
- *
- * @param {object} parsedFilters Parsed filter parameters.
- * @returns {string} The WHERE clause string for SQL queries.
- */
-const generateWhereClause = (parsedFilters) => {
-  const conditions = Object.keys(parsedFilters).map((key) => {
-    const filter = parsedFilters[key];
-
-    // Check if the filter is a simple string condition
-    // such as: 'key = publicationyear, string filter = 1990'
-    if (typeof filter === 'string') {
-      return `${key} = '${filter}'`;
-    } else if (typeof filter === 'object') {
-      // If the filter is an object, extract operator and value
-      // such as: 'key = author, SQL operator = LIKE, Value = Paulo'
-      const { operator, value } = filter;
-
-      // Handle the LIKE operator for text searching with %
-      if (operator === 'LIKE') {
-        return `${key} ${operator} '%${value}%'`;
-      } else {
-        // For other supported operators from operatorSymbols, create the condition
-        return `${key} ${operator} '${value}'`;
-      }
-    }
-    // Return an empty string for unsupported conditions
-    return '';
-  });
-
-  // Filter out empty conditions and join them with 'AND'
-  const filteredConditions = conditions.filter(Boolean);
-  if (filteredConditions.length > 0) {
-    return `WHERE ${filteredConditions.join(' AND ')}`;
-  }
-  return ''; // Return an empty string if no conditions are provided
-};
+import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from './general-dao';
 
 /**
  * Return a list of members with pagination
@@ -56,28 +19,17 @@ const getMembers = async (query) => {
   try {
     const parsedQuery = parseQuery(query);
     const whereClause = generateWhereClause(parsedQuery).toLowerCase();
-
-    const pageNumber = parseInt(parsedQuery['page[number]'], 10) || 1;
-    const perPage = parseInt(parsedQuery['page[size]'], 10) || 25;
-    const offset = (pageNumber - 1) * perPage;
+    const paginationParams = generatePaginationParams(parsedQuery);
 
     const selectQuery = `
       SELECT *
       FROM library_api_members
       ${whereClause}
-      OFFSET ${offset} ROWS FETCH NEXT ${perPage} ROWS ONLY
+      OFFSET ${paginationParams.offset} ROWS FETCH NEXT ${paginationParams.perPage} ROWS ONLY
     `;
 
-    const response = await connection.execute(selectQuery);
-    const { rows } = response;
-    const rowsLower = rows.map((item) => {
-      const newItem = {};
-      Object.keys(item).forEach((key) => {
-        newItem[key.toLowerCase()] = item[key];
-      });
-      return newItem;
-    });
-    return rowsLower;
+    const { rows } = await connection.execute(selectQuery);
+    return convertKeysToLowercase(rows);
   } finally {
     connection.close();
   }
@@ -109,11 +61,7 @@ const getMemberById = async (id) => {
       throw new Error('Expect a single object but got multiple results.');
     } else {
       const rawMembersLower = rows[0];
-      const rawMembers = Object.keys(rawMembersLower).reduce((result, key) => {
-        result[key.toLowerCase()] = rawMembersLower[key];
-        return result;
-      }, {});
-      return rawMembers;
+      return convertKeysToLowercase([rawMembersLower])[0];
     }
   } finally {
     connection.close();
@@ -192,12 +140,17 @@ const postMember = async (body) => {
   try {
     const newMemberDataRaw = body.data.attributes;
     const newMemberData = {
-      ...newMemberDataRaw,
-      firstname: newMemberDataRaw.firstName,
-      lastname: newMemberDataRaw.lastName,
+      firstname: newMemberDataRaw.firstName.toLowerCase(),
+      lastname: newMemberDataRaw.lastName.toLowerCase(),
+      email: newMemberDataRaw.email.toLowerCase(),
+      address: newMemberDataRaw.address.toLowerCase(),
+      city: newMemberDataRaw.city.toLowerCase(),
+      state: newMemberDataRaw.state.toUpperCase(),
+      country: newMemberDataRaw.country.toLowerCase(),
       phonenumber: newMemberDataRaw.phoneNumber,
+      status: 'active',
     };
-    newMemberData.status = 'active';
+
     const insertQuery = `
     INSERT INTO library_api_members (
       member_id,
@@ -212,29 +165,21 @@ const postMember = async (body) => {
       status
     ) VALUES (
       library_api_members_seq.NEXTVAL,
-      :firstName,
-      :lastName,
+      :firstname,
+      :lastname,
       :email,
       :address,
       :city,
       :state,
       :country,
-      :phoneNumber,
+      :phonenumber,
       :status
     )
     RETURNING member_id INTO :insertedId
   `; // Fetch the inserted ID
 
     const bindVars = {
-      firstname: newMemberData.firstname.toLowerCase(),
-      lastname: newMemberData.lastname.toLowerCase(),
-      email: newMemberData.email.toLowerCase(),
-      address: newMemberData.address.toLowerCase(),
-      city: newMemberData.city.toLowerCase(),
-      state: newMemberData.state.toUpperCase(),
-      country: newMemberData.country.toLowerCase(),
-      phonenumber: newMemberData.phonenumber,
-      status: newMemberData.status.toLowerCase(),
+      ...newMemberData,
       insertedId: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
     };
 
@@ -243,20 +188,7 @@ const postMember = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newMemberData.member_id = result.outBinds.insertedId;
-      const lowercaseMemberData = {
-        member_id: newMemberData.member_id,
-        firstname: newMemberData.firstname.toLowerCase(),
-        lastname: newMemberData.lastname.toLowerCase(),
-        email: newMemberData.email.toLowerCase(),
-        address: newMemberData.address.toLowerCase(),
-        city: newMemberData.city.toLowerCase(),
-        state: newMemberData.state.toUpperCase(),
-        country: newMemberData.country.toLowerCase(),
-        phonenumber: newMemberData.phonenumber,
-        status: newMemberData.status.toLowerCase(),
-      };
-
-      return lowercaseMemberData;
+      return newMemberData;
     }
     await connection.rollback();
     throw new Error(`Failed to insert the member. Error: ${result.errorNum}`);
