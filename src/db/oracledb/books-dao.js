@@ -1,12 +1,10 @@
 import _ from 'lodash';
-
 import oracledb from 'oracledb';
 
 import { parseQuery } from 'utils/parse-query';
+import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from 'utils/dao-helper';
 
 import { getConnection } from './connection';
-
-import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from './general-dao';
 
 /**
  * Return a list of books with pagination
