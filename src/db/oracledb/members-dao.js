@@ -71,44 +71,34 @@ const getMemberById = async (id) => {
  *
  * @param {string} id Unique member ID
  * @param {object} updateData Data to update
- * @param {object} existingMember Exisitng member to update
+ * @param {object} existingMember Existing member to update
  * @returns {Promise<object>} Promise object represents the updated member or undefined if not found
  */
 const updateMemberById = async (id, updateData, existingMember) => {
   const connection = await getConnection();
 
   try {
+    const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
     const updatedMemberData = {
       ...existingMember,
-      ...updateData,
+      ...lowercaseUpdateData,
     };
+
+    const updateQueryKeys = Object.keys(updatedMemberData).filter((key) => key !== 'member_id');
+    const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
     UPDATE library_api_members
-    SET firstName = :firstName,
-        lastName = :lastName,
-        email = :email,
-        address = :address,
-        city = :city,
-        state = :state,
-        country = :country,
-        phoneNumber = :phoneNumber,
-        status = :status
+    SET ${updateQuerySet}
     WHERE member_id = :memberId
   `;
-
     const bindVars = {
-      firstName: updatedMemberData.firstName.toLowerCase(),
-      lastName: updatedMemberData.lastName.toLowerCase(),
-      email: updatedMemberData.email.toLowerCase(),
-      address: updatedMemberData.address.toLowerCase(),
-      city: updatedMemberData.city.toLowerCase(),
-      state: updatedMemberData.state.toUpperCase(),
-      country: updatedMemberData.country.toLowerCase(),
-      phoneNumber: updatedMemberData.phoneNumber,
-      status: updatedMemberData.status.toLowerCase(),
       memberId: id,
     };
+
+    updateQueryKeys.forEach((key) => {
+      bindVars[key] = key === 'state' ? updatedMemberData[key].toUpperCase() : updatedMemberData[key].toLowerCase();
+    });
 
     const result = await connection.execute(updateQuery, bindVars);
 

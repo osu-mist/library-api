@@ -71,40 +71,35 @@ const getBookById = async (id) => {
  *
  * @param {string} id Unique book ID
  * @param {object} updateData Data to update
- * @param {object} existingBook Exisitng book to update
+ * @param {object} existingBook Existing book to update
  * @returns {Promise<object>} Promise object represents the updated book or undefined if not found
  */
 const updateBookById = async (id, updateData, existingBook) => {
   const connection = await getConnection();
 
   try {
+    const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
     const updatedBookData = {
       ...existingBook,
-      ...updateData,
+      ...lowercaseUpdateData,
     };
+
+    const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'book_id');
+    const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
       UPDATE library_api_books
-      SET title = :title,
-          author = :author,
-          publicationyear = :publicationYear,
-          isbn = :isbn,
-          genre = :genre,
-          description = :description,
-          available = :available
+      SET ${updateQuerySet}
       WHERE book_id = :bookId
     `;
 
     const bindVars = {
-      title: updatedBookData.title.toLowerCase(),
-      author: updatedBookData.author.toLowerCase(),
-      publicationYear: updatedBookData.publicationYear,
-      isbn: updatedBookData.isbn.toLowerCase(),
-      genre: updatedBookData.genre.toLowerCase(),
-      description: updatedBookData.description.toLowerCase(),
-      available: updatedBookData.available.toLowerCase(),
       bookId: id,
     };
+
+    updateQueryKeys.forEach((key) => {
+      bindVars[key] = key === 'publicationyear' ? updatedBookData[key] : updatedBookData[key].toLowerCase();
+    });
 
     const result = await connection.execute(updateQuery, bindVars);
 
