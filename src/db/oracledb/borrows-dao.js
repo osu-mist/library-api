@@ -45,13 +45,14 @@ const getBorrowById = async (id) => {
   const query = `
     SELECT *
     FROM library_api_borrows
-    WHERE borrow_id = :borrowId
+    WHERE borrowid = :borrowId
   `;
 
   try {
     const bindVars = { borrowId: id };
+    const response = await connection.execute(query, bindVars);
+    const { rows } = response;
 
-    const { rows } = await connection.execute(query, bindVars);
     if (_.isEmpty(rows)) {
       return undefined;
     }
@@ -84,13 +85,13 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
       ...lowercaseUpdateData,
     };
 
-    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrow_id');
+    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrowid');
     const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
       UPDATE library_api_borrows
       SET ${updateQuerySet}
-      WHERE borrow_id = :borrowId
+      WHERE borrowid = :borrowId
     `;
 
     const bindVars = {
@@ -140,7 +141,7 @@ const postBorrow = async (body) => {
 
     const insertQuery = `
       INSERT INTO library_api_borrows (
-        borrow_id,
+        borrowid,
         title,
         author,
         publicationyear,
@@ -158,7 +159,7 @@ const postBorrow = async (body) => {
         :description,
         :available
       )
-      RETURNING borrow_id INTO :insertedId
+      RETURNING borrowid INTO :insertedId
     `; // Fetch the inserted ID
 
     const bindVars = {
@@ -170,7 +171,7 @@ const postBorrow = async (body) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newBorrowData.borrow_id = result.outBinds.insertedId;
+      newBorrowData.borrowid = result.outBinds.insertedId;
       return newBorrowData;
     }
     await connection.rollback();

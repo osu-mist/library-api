@@ -45,7 +45,7 @@ const getMemberById = async (id) => {
   const query = `
     SELECT *
     FROM library_api_members
-    WHERE member_id = :memberId
+    WHERE memberid = :memberId
   `;
 
   try {
@@ -84,13 +84,13 @@ const updateMemberById = async (id, updateData, existingMember) => {
       ...lowercaseUpdateData,
     };
 
-    const updateQueryKeys = Object.keys(updatedMemberData).filter((key) => key !== 'member_id');
+    const updateQueryKeys = Object.keys(updatedMemberData).filter((key) => key !== 'memberid');
     const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
     UPDATE library_api_members
     SET ${updateQuerySet}
-    WHERE member_id = :memberId
+    WHERE memberid = :memberId
   `;
     const bindVars = {
       memberId: id,
@@ -141,7 +141,7 @@ const postMember = async (body) => {
 
     const insertQuery = `
     INSERT INTO library_api_members (
-      member_id,
+      memberid,
       firstName,
       lastName,
       email,
@@ -163,7 +163,7 @@ const postMember = async (body) => {
       :phonenumber,
       :status
     )
-    RETURNING member_id INTO :insertedId
+    RETURNING memberid INTO :insertedId
   `; // Fetch the inserted ID
 
     const bindVars = {
@@ -175,7 +175,7 @@ const postMember = async (body) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newMemberData.member_id = result.outBinds.insertedId;
+      newMemberData.memberid = result.outBinds.insertedId;
       return newMemberData;
     }
     await connection.rollback();

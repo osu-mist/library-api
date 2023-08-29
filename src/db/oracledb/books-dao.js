@@ -45,7 +45,7 @@ const getBookById = async (id) => {
   const query = `
     SELECT *
     FROM library_api_books
-    WHERE book_id = :bookId
+    WHERE bookid = :bookId
   `;
 
   try {
@@ -84,13 +84,13 @@ const updateBookById = async (id, updateData, existingBook) => {
       ...lowercaseUpdateData,
     };
 
-    const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'book_id');
+    const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'bookid');
     const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
       UPDATE library_api_books
       SET ${updateQuerySet}
-      WHERE book_id = :bookId
+      WHERE bookid = :bookId
     `;
 
     const bindVars = {
@@ -140,7 +140,7 @@ const postBook = async (body) => {
 
     const insertQuery = `
       INSERT INTO library_api_books (
-        book_id,
+        bookid,
         title,
         author,
         publicationyear,
@@ -158,7 +158,7 @@ const postBook = async (body) => {
         :description,
         :available
       )
-      RETURNING book_id INTO :insertedId
+      RETURNING bookid INTO :insertedId
     `; // Fetch the inserted ID
 
     const bindVars = {
@@ -170,7 +170,7 @@ const postBook = async (body) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newBookData.book_id = result.outBinds.insertedId;
+      newBookData.bookid = result.outBinds.insertedId;
       return newBookData;
     }
     await connection.rollback();

@@ -37,7 +37,7 @@ const serializeBorrows = (rawBorrows, req) => {
   // TODO use req.path
   const topLevelSelfLink = paramsLink(borrowResourceUrl, query);
   const serializerArgs = {
-    identifierField: 'borrow_id',
+    identifierField: 'borrowid',
     resourceKeys: borrowResourceKeys,
     pagination,
     resourcePath: borrowResourcePath,
@@ -65,11 +65,11 @@ const serializeBorrow = (rawBorrow, req) => {
   // TODO use req.path
   const baseUrl = req.method === 'POST'
     ? borrowResourceUrl
-    : resourcePathLink(borrowResourceUrl, rawBorrow.borrow_id);
+    : resourcePathLink(borrowResourceUrl, rawBorrow.borrowid);
   const topLevelSelfLink = paramsLink(baseUrl, query);
 
   const serializerArgs = {
-    identifierField: 'borrow_id',
+    identifierField: 'borrowid',
     resourceKeys: borrowResourceKeys,
     resourcePath: borrowResourcePath,
     topLevelSelfLink,
