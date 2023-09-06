@@ -117,50 +117,46 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
 };
 
 /**
- * Posts a new borrow to the Oracle database
+ * Posts a new borrow transaction to the Oracle database
  *
- * Inserts the posted borrow into the Oracle database.
+ * Inserts the posted borrow transaction into the Oracle database.
  *
  * @param {object} body Request body
- * @returns {Promise<object>} Promise object represents the posted borrow
+ * @returns {Promise<object>} Promise object represents the posted borrow transaction
  */
 const postBorrow = async (body) => {
   const connection = await getConnection();
+  let response = {};
 
   try {
     const newBorrowDataRaw = body.data.attributes;
+    const currentPSTDate = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
     const newBorrowData = {
-      title: newBorrowDataRaw.title.toLowerCase(),
-      author: newBorrowDataRaw.author.toLowerCase(),
-      publicationyear: newBorrowDataRaw.publicationYear,
-      isbn: newBorrowDataRaw.isbn.toLowerCase(),
-      genre: newBorrowDataRaw.genre.toLowerCase(),
-      description: newBorrowDataRaw.description.toLowerCase(),
-      available: 'true',
+      bookid: newBorrowDataRaw.bookId,
+      memberid: newBorrowDataRaw.memberId,
+      borrowdate: newBorrowDataRaw.borrowDate || currentPSTDate,
+      duedate: newBorrowDataRaw.dueDate,
+      status: 'ongoing', // the status will be 'ongoing' when initially borrowed
     };
 
     const insertQuery = `
       INSERT INTO library_api_borrows (
         borrowid,
-        title,
-        author,
-        publicationyear,
-        isbn,
-        genre,
-        description,
-        available
+        bookid,
+        memberid,
+        borrowdate,
+        duedate,
+        status
       ) VALUES (
         library_api_borrows_seq.NEXTVAL, -- Use the sequence here
-        :title,
-        :author,
-        :publicationYear,
-        :isbn,
-        :genre,
-        :description,
-        :available
+        :bookid,
+        :memberid,
+        TO_DATE(:borrowdate, 'YYYY-MM-DD'),
+        TO_DATE(:duedate, 'YYYY-MM-DD'),
+        :status
       )
       RETURNING borrowid INTO :insertedId
-    `; // Fetch the inserted ID
+    `;
 
     const bindVars = {
       ...newBorrowData,
@@ -173,9 +169,26 @@ const postBorrow = async (body) => {
       await connection.commit();
       newBorrowData.borrowid = result.outBinds.insertedId;
       return newBorrowData;
+    } else {
+      await connection.rollback();
+      throw new Error('Failed to insert the borrow transaction.');
     }
+  } catch (err) {
     await connection.rollback();
-    throw new Error(`Failed to insert the borrow. Error: ${result.errorNum}`);
+
+    if (err.errorNum === 2291) {
+      response = {
+        error: 'Integrity Constraint Violated',
+        message: 'Parent key not found. Please ensure the bookId and memberId exist.',
+      };
+    } else {
+      response = {
+        error: 'Database Error',
+        message: `Failed to insert the borrow transaction. Error: ${err.message}`,
+      };
+    }
+
+    throw response;
   } finally {
     connection.close();
   }
