@@ -7,6 +7,7 @@ import {
   generatePaginationParams,
   convertKeysToLowercase,
   formatDateInWhereClause,
+  convertDatesInObject,
 } from 'utils/dao-helper';
 
 import { getConnection } from './connection';
@@ -88,13 +89,20 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
 
   try {
     const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
-    const updatedBorrowData = {
+    const borrowData = {
       ...existingBorrow,
       ...lowercaseUpdateData,
     };
 
+    const updatedBorrowData = convertDatesInObject(borrowData);
+
     const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrowid');
-    const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
+    const updateQuerySet = updateQueryKeys.map((key) => {
+      if (['borrowdate', 'duedate', 'returndate'].includes(key)) {
+        return `${key} = TO_DATE(:${key}, 'YYYY-MM-DD')`;
+      }
+      return `${key} = :${key}`;
+    }).join(', ');
 
     const updateQuery = `
       UPDATE library_api_borrows
@@ -107,7 +115,9 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
     };
 
     updateQueryKeys.forEach((key) => {
-      bindVars[key] = updatedBorrowData[key].toString().toLowerCase();
+      if (updatedBorrowData[key] !== null) {
+        bindVars[key] = updatedBorrowData[key].toLowerCase();
+      }
     });
 
     const result = await connection.execute(updateQuery, bindVars);
@@ -192,10 +202,9 @@ const postBorrow = async (body) => {
       await connection.commit();
       newBorrowData.borrowid = result.outBinds.insertedId;
       return newBorrowData;
-    } else {
-      await connection.rollback();
-      throw new Error('Failed to insert the borrow transaction.');
     }
+    await connection.rollback();
+    throw new Error('Failed to insert the borrow transaction.');
   } catch (err) {
     await connection.rollback();
 

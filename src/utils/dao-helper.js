@@ -86,9 +86,55 @@ const formatDateInWhereClause = (whereClause) => {
   return whereClause.replace(datePattern, (match) => `TO_DATE(${match}, 'YYYY-MM-DD')`);
 };
 
+/**
+ * Converts a date string from 'DD-MMM-YY' to 'YYYY-MM-DD' format.
+ *
+ * @param {string} date - The date string in 'DD-MMM-YY' format.
+ * @returns {string} - The date string in 'YYYY-MM-DD' format.
+ */
+const convertDate = (date) => {
+  const monthMap = {
+    JAN: '01',
+    FEB: '02',
+    MAR: '03',
+    APR: '04',
+    MAY: '05',
+    JUN: '06',
+    JUL: '07',
+    AUG: '08',
+    SEP: '09',
+    OCT: '10',
+    NOV: '11',
+    DEC: '12',
+  };
+
+  const [day, month, year] = date.toUpperCase().split('-');
+  return `20${year}-${monthMap[month]}-${day}`;
+};
+
+/**
+ * Converts all date strings in an object from 'DD-MMM-YY' to 'YYYY-MM-DD' format.
+ *
+ * @param {object} data - The object containing date strings.
+ * @returns {object} - The object with converted date strings.
+ */
+const convertDatesInObject = (data) => {
+  const isAlreadyCorrectFormat = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date);
+
+  Object.keys(data).forEach((key) => {
+    const value = data[key];
+    if (typeof value === 'string' && value.includes('-') && !isAlreadyCorrectFormat(value)) {
+      data[key] = convertDate(value);
+    }
+  });
+  return data;
+};
+
 export {
   generateWhereClause,
   generatePaginationParams,
   convertKeysToLowercase,
   formatDateInWhereClause,
+  convertDate,
+  convertDatesInObject,
 };
