@@ -74,15 +74,17 @@ const getBorrowById = async (id) => {
 };
 
 /**
- * Update a specific borrow by unique ID
+ * Update a specific borrow transaction by unique ID and handle DB constraint
  *
  * @param {string} id Unique borrow ID
  * @param {object} updateData Data to update
  * @param {object} existingBorrow Existing borrow to update
- * @returns {Promise<object>} Promise object represents the updated borrow or undefined if not found
+ * @returns {Promise<object>} Promise object represents the updated
+ *                            borrow or an error object if not found
  */
 const updateBorrowById = async (id, updateData, existingBorrow) => {
   const connection = await getConnection();
+  let response = {};
 
   try {
     const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
@@ -105,18 +107,33 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
     };
 
     updateQueryKeys.forEach((key) => {
-      bindVars[key] = key === 'publicationyear' ? updatedBorrowData[key] : updatedBorrowData[key].toLowerCase();
+      bindVars[key] = updatedBorrowData[key].toString().toLowerCase();
     });
 
     const result = await connection.execute(updateQuery, bindVars);
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      connection.close();
       return getBorrowById(id);
     }
+
     await connection.rollback();
-    throw new Error(`Failed to update the borrow. Error: ${result.errorNum}`);
+    throw new Error('Failed to update the borrow transaction.');
+  } catch (err) {
+    await connection.rollback();
+
+    if (err.errorNum === 2291) {
+      response = {
+        error: 'Integrity Constraint Violated',
+        message: 'Parent key not found. Please ensure the bookId and memberId exist.',
+      };
+    } else {
+      response = {
+        error: 'Database Error',
+        message: `Failed to update the borrow transaction. Error: ${err.message}`,
+      };
+    }
+    throw response;
   } finally {
     connection.close();
   }
