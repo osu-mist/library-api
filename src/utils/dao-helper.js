@@ -12,7 +12,9 @@ const generateWhereClause = (parsedFilters) => {
     // such as: 'key = publicationyear, string filter = 1990'
     if (typeof filter === 'string') {
       return `${key} = '${filter}'`;
-    } else if (typeof filter === 'object') {
+    }
+
+    if (typeof filter === 'object') {
       // If the filter is an object, extract operator and value
       // such as: 'key = author, SQL operator = LIKE, Value = Paulo'
       const { operator, value } = filter;
@@ -20,11 +22,12 @@ const generateWhereClause = (parsedFilters) => {
       // Handle the LIKE operator for text searching with %
       if (operator === 'LIKE') {
         return `${key} ${operator} '%${value}%'`;
-      } else {
-        // For other supported operators from operatorSymbols, create the condition
-        return `${key} ${operator} '${value}'`;
       }
+
+      // For other supported operators, create the condition
+      return `${key} ${operator} '${value}'`;
     }
+
     // Return an empty string for unsupported conditions
     return '';
   });
@@ -34,7 +37,7 @@ const generateWhereClause = (parsedFilters) => {
   if (filteredConditions.length > 0) {
     return `WHERE ${filteredConditions.join(' AND ')}`;
   }
-  return ''; // Return an empty string if no conditions are provided
+  return ''; // Return an empty string when no conditions are provided
 };
 
 /**
