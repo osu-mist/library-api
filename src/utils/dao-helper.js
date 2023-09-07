@@ -71,4 +71,24 @@ const convertKeysToLowercase = (arrayOfObjects) => (
   })
 );
 
-export { generateWhereClause, generatePaginationParams, convertKeysToLowercase };
+/**
+ * Formats date literals in a WHERE clause SQL string
+ * to use the TO_DATE function in Oracle SQL.
+ *
+ * @param {string} whereClause - The original WHERE clause
+ * @returns {string} - The modified WHERE clause with date literals converted
+ */
+const formatDateInWhereClause = (whereClause) => {
+  // The regex pattern matches dates in 'YYYY-MM-DD' format
+  const datePattern = /'\d{4}-\d{2}-\d{2}'/g;
+
+  // Replace all instances of date patterns with TO_DATE function
+  return whereClause.replace(datePattern, (match) => `TO_DATE(${match}, 'YYYY-MM-DD')`);
+};
+
+export {
+  generateWhereClause,
+  generatePaginationParams,
+  convertKeysToLowercase,
+  formatDateInWhereClause,
+};

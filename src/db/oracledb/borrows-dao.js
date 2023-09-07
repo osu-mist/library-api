@@ -2,7 +2,12 @@ import _ from 'lodash';
 import oracledb from 'oracledb';
 
 import { parseQuery } from 'utils/parse-query';
-import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from 'utils/dao-helper';
+import {
+  generateWhereClause,
+  generatePaginationParams,
+  convertKeysToLowercase,
+  formatDateInWhereClause,
+} from 'utils/dao-helper';
 
 import { getConnection } from './connection';
 
@@ -16,7 +21,8 @@ const getBorrows = async (query) => {
   const connection = await getConnection();
   try {
     const parsedQuery = parseQuery(query);
-    const whereClause = generateWhereClause(parsedQuery).toLowerCase();
+    const originalWhereClause = generateWhereClause(parsedQuery).toLowerCase();
+    const whereClause = formatDateInWhereClause(originalWhereClause);
     const paginationParams = generatePaginationParams(parsedQuery);
 
     const selectQuery = `
