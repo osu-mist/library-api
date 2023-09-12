@@ -2,7 +2,13 @@ import _ from 'lodash';
 import oracledb from 'oracledb';
 
 import { parseQuery } from 'utils/parse-query';
-import { generateWhereClause, generatePaginationParams, convertToSnakeCase, convertArrayToSnakeCase, convertKeysToCamelCase } from 'utils/dao-helper';
+import {
+  generateWhereClause,
+  generatePaginationParams,
+  convertToSnakeCase,
+  convertArrayToSnakeCase,
+  convertKeysToCamelCase,
+} from 'utils/dao-helper';
 
 import { getConnection } from './connection';
 
@@ -85,7 +91,7 @@ const updateBookById = async (id, updateData, existingBook) => {
     };
 
     const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'bookId');
-    const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys)
+    const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys);
     const updateQuerySet = updateQueryKeySnake.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `

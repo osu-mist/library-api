@@ -139,33 +139,28 @@ const convertDatesInObject = (data) => {
  * @param {Array<Object>} rows - The array of objects with keys to be converted.
  * @returns {Array<Object>} A new array of objects with keys converted to camelCase.
  */
-const convertKeysToCamelCase = (rows) => {
-  return rows.map(row => {
-    return Object.keys(row).reduce((acc, key) => {
-      const camelCaseKey = key.toLowerCase().replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
-      acc[camelCaseKey] = row[key];
-      return acc;
-    }, {});
-  });
-};
+const convertKeysToCamelCase = (rows) => rows.map((row) => Object.keys(row).reduce((acc, key) => {
+  const camelCaseKey = key.toLowerCase().replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+  acc[camelCaseKey] = row[key];
+  return acc;
+}, {}));
 
 /**
- * Converts an object's keys from camelCase to snake_case, except for 'page[number]' and 'page[size]'.
+ * Converts an object's keys from camelCase to snake_case, except for
+ * 'page[number]' and 'page[size]'.
  *
  * @param {Object} obj - The object with keys to be converted.
  * @returns {Object} A new object with keys converted to snake_case.
  */
-const convertToSnakeCase = (obj) => {
-  return Object.keys(obj).reduce((acc, key) => {
-    if (key === 'page[number]' || key === 'page[size]') {
-      acc[key] = obj[key];
-    } else {
-      const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-      acc[snakeCaseKey] = obj[key];
-    }
-    return acc;
-  }, {});
-};
+const convertToSnakeCase = (obj) => Object.keys(obj).reduce((acc, key) => {
+  if (key === 'page[number]' || key === 'page[size]') {
+    acc[key] = obj[key];
+  } else {
+    const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    acc[snakeCaseKey] = obj[key];
+  }
+  return acc;
+}, {});
 
 /**
  * Converts an array of camelCase strings to snake_case.
@@ -173,9 +168,7 @@ const convertToSnakeCase = (obj) => {
  * @param {Array<string>} updateQueryKeys - The array of camelCase strings.
  * @returns {Array<string>} A new array of strings converted to snake_case.
  */
-const convertArrayToSnakeCase = (updateQueryKeys) => {
-  return updateQueryKeys.map(key => key.replace(/([A-Z])/g, '_$1').toLowerCase());
-};
+const convertArrayToSnakeCase = (updateQueryKeys) => updateQueryKeys.map((key) => key.replace(/([A-Z])/g, '_$1').toLowerCase());
 
 export {
   generateWhereClause,
