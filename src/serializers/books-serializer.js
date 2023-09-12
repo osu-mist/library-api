@@ -10,8 +10,7 @@ const bookResourceProp = openapi.components.schemas.BookResource.properties;
 const bookResourceType = bookResourceProp.type.enum[0];
 const bookResourceAttributes = bookResourceProp.attributes.allOf;
 const bookCombinedAttributes = _.merge(bookResourceAttributes[0], bookResourceAttributes[1]);
-const bookResourceKeysOrg = _.keys(bookCombinedAttributes.properties);
-const bookResourceKeys = bookResourceKeysOrg.map((key) => key.toLowerCase());
+const bookResourceKeys = _.keys(bookCombinedAttributes.properties);
 const bookResourcePath = 'library/books';
 const bookResourceUrl = resourcePathLink(apiBaseUrl, bookResourcePath);
 
@@ -37,7 +36,7 @@ const serializeBooks = (rawBooks, req) => {
   // TODO use req.path
   const topLevelSelfLink = paramsLink(bookResourceUrl, query);
   const serializerArgs = {
-    identifierField: 'bookid',
+    identifierField: 'bookId',
     resourceKeys: bookResourceKeys,
     pagination,
     resourcePath: bookResourcePath,
@@ -65,11 +64,11 @@ const serializeBook = (rawBook, req) => {
   // TODO use req.path
   const baseUrl = req.method === 'POST'
     ? bookResourceUrl
-    : resourcePathLink(bookResourceUrl, rawBook.bookid);
+    : resourcePathLink(bookResourceUrl, rawBook.bookId);
   const topLevelSelfLink = paramsLink(baseUrl, query);
 
   const serializerArgs = {
-    identifierField: 'bookid',
+    identifierField: 'bookId',
     resourceKeys: bookResourceKeys,
     resourcePath: bookResourcePath,
     topLevelSelfLink,

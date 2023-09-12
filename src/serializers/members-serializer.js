@@ -37,7 +37,7 @@ const serializeMembers = (rawMembers, req) => {
   // TODO use req.path
   const topLevelSelfLink = paramsLink(memberResourceUrl, query);
   const serializerArgs = {
-    identifierField: 'memberid',
+    identifierField: 'memberId',
     resourceKeys: memberResourceKeys,
     pagination,
     resourcePath: memberResourcePath,
@@ -65,11 +65,11 @@ const serializeMember = (rawMember, req) => {
   // TODO use req.path
   const baseUrl = req.method === 'POST'
     ? memberResourceUrl
-    : resourcePathLink(memberResourceUrl, rawMember.memberid);
+    : resourcePathLink(memberResourceUrl, rawMember.memberId);
   const topLevelSelfLink = paramsLink(baseUrl, query);
 
   const serializerArgs = {
-    identifierField: 'memberid',
+    identifierField: 'memberId',
     resourceKeys: memberResourceKeys,
     resourcePath: memberResourcePath,
     topLevelSelfLink,

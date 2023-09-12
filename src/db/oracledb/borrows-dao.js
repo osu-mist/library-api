@@ -52,7 +52,7 @@ const getBorrowById = async (id) => {
   const query = `
     SELECT *
     FROM library_api_borrows
-    WHERE borrowid = :borrowId
+    WHERE borrow_id = :borrowId
   `;
 
   try {
@@ -96,7 +96,7 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
 
     const updatedBorrowData = convertDatesInObject(borrowData);
 
-    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrowid');
+    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrow_id');
     const updateQuerySet = updateQueryKeys.map((key) => {
       if (['borrowdate', 'duedate', 'returndate'].includes(key)) {
         return `${key} = TO_DATE(:${key}, 'YYYY-MM-DD')`;
@@ -107,7 +107,7 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
     const updateQuery = `
       UPDATE library_api_borrows
       SET ${updateQuerySet}
-      WHERE borrowid = :borrowId
+      WHERE borrow_id = :borrowId
     `;
 
     const bindVars = {
@@ -174,7 +174,7 @@ const postBorrow = async (body) => {
 
     const insertQuery = `
       INSERT INTO library_api_borrows (
-        borrowid,
+        borrow_id,
         bookid,
         memberid,
         borrowdate,
@@ -188,7 +188,7 @@ const postBorrow = async (body) => {
         TO_DATE(:duedate, 'YYYY-MM-DD'),
         :status
       )
-      RETURNING borrowid INTO :insertedId
+      RETURNING borrow_id INTO :insertedId
     `;
 
     const bindVars = {
@@ -200,7 +200,7 @@ const postBorrow = async (body) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newBorrowData.borrowid = result.outBinds.insertedId;
+      newBorrowData.borrowId = result.outBinds.insertedId;
       return newBorrowData;
     }
     await connection.rollback();
