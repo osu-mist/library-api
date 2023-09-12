@@ -5,9 +5,11 @@ import { parseQuery } from 'utils/parse-query';
 import {
   generateWhereClause,
   generatePaginationParams,
-  convertKeysToLowercase,
   formatDateInWhereClause,
   convertDatesInObject,
+  convertToSnakeCase,
+  convertArrayToSnakeCase,
+  convertKeysToCamelCase,
 } from 'utils/dao-helper';
 
 import { getConnection } from './connection';
@@ -22,9 +24,10 @@ const getBorrows = async (query) => {
   const connection = await getConnection();
   try {
     const parsedQuery = parseQuery(query);
-    const originalWhereClause = generateWhereClause(parsedQuery).toLowerCase();
+    const snakeCaseParsedQuery = convertToSnakeCase(parsedQuery);
+    const originalWhereClause = generateWhereClause(snakeCaseParsedQuery).toLowerCase();
     const whereClause = formatDateInWhereClause(originalWhereClause);
-    const paginationParams = generatePaginationParams(parsedQuery);
+    const paginationParams = generatePaginationParams(snakeCaseParsedQuery);
 
     const selectQuery = `
       SELECT *
@@ -34,7 +37,7 @@ const getBorrows = async (query) => {
     `;
 
     const { rows } = await connection.execute(selectQuery);
-    return convertKeysToLowercase(rows);
+    return convertKeysToCamelCase(rows);
   } finally {
     connection.close();
   }
@@ -67,7 +70,7 @@ const getBorrowById = async (id) => {
       throw new Error('Expect a single object but got multiple results.');
     } else {
       const rawBorrowsLower = rows[0];
-      return convertKeysToLowercase([rawBorrowsLower])[0];
+      return convertKeysToCamelCase([rawBorrowsLower])[0];
     }
   } finally {
     connection.close();
@@ -88,17 +91,17 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
   let response = {};
 
   try {
-    const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
     const borrowData = {
       ...existingBorrow,
-      ...lowercaseUpdateData,
+      ...updateData,
     };
 
     const updatedBorrowData = convertDatesInObject(borrowData);
 
-    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrow_id');
-    const updateQuerySet = updateQueryKeys.map((key) => {
-      if (['borrowdate', 'duedate', 'returndate'].includes(key)) {
+    const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrowId');
+    const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys);
+    const updateQuerySet = updateQueryKeySnake.map((key) => {
+      if (['borrow_date', 'due_date', 'return_date'].includes(key)) {
         return `${key} = TO_DATE(:${key}, 'YYYY-MM-DD')`;
       }
       return `${key} = :${key}`;
@@ -107,7 +110,7 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
     const updateQuery = `
       UPDATE library_api_borrows
       SET ${updateQuerySet}
-      WHERE borrow_id = :borrowId
+      WHERE borrow_id = :borrow_id
     `;
 
     const bindVars = {
@@ -120,7 +123,7 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
       }
     });
 
-    const result = await connection.execute(updateQuery, bindVars);
+    const result = await connection.execute(updateQuery, convertToSnakeCase(bindVars));
 
     if (result.rowsAffected === 1) {
       await connection.commit();
@@ -163,29 +166,29 @@ const postBorrow = async (body) => {
 
   try {
     const newBorrowDataRaw = body.data.attributes;
-    const currentPSTDate = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+    const currentPstDate = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
     const newBorrowData = {
-      bookid: newBorrowDataRaw.bookId,
-      memberid: newBorrowDataRaw.memberId,
-      borrowdate: newBorrowDataRaw.borrowDate || currentPSTDate,
-      duedate: newBorrowDataRaw.dueDate,
+      bookId: newBorrowDataRaw.bookId,
+      memberId: newBorrowDataRaw.memberId,
+      borrowDate: newBorrowDataRaw.borrowDate || currentPstDate,
+      dueDate: newBorrowDataRaw.dueDate,
       status: 'ongoing', // the status will be 'ongoing' when initially borrowed
     };
 
     const insertQuery = `
       INSERT INTO library_api_borrows (
         borrow_id,
-        bookid,
-        memberid,
-        borrowdate,
-        duedate,
+        book_id,
+        member_id,
+        borrow_date,
+        due_date,
         status
       ) VALUES (
         library_api_borrows_seq.NEXTVAL, -- Use the sequence here
-        :bookid,
-        :memberid,
-        TO_DATE(:borrowdate, 'YYYY-MM-DD'),
-        TO_DATE(:duedate, 'YYYY-MM-DD'),
+        :bookId,
+        :memberId,
+        TO_DATE(:borrowDate, 'YYYY-MM-DD'),
+        TO_DATE(:dueDate, 'YYYY-MM-DD'),
         :status
       )
       RETURNING borrow_id INTO :insertedId
@@ -201,6 +204,7 @@ const postBorrow = async (body) => {
     if (result.rowsAffected === 1) {
       await connection.commit();
       newBorrowData.borrowId = result.outBinds.insertedId;
+      newBorrowData.returnDate = null;
       return newBorrowData;
     }
     await connection.rollback();
