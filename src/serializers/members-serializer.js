@@ -10,8 +10,7 @@ const memberResourceProp = openapi.components.schemas.MemberResource.properties;
 const memberResourceType = memberResourceProp.type.enum[0];
 const memberResourceAttributes = memberResourceProp.attributes.allOf;
 const memberCombinedAttributes = _.merge(memberResourceAttributes[0], memberResourceAttributes[1]);
-const memberResourceKeysOrg = _.keys(memberCombinedAttributes.properties);
-const memberResourceKeys = memberResourceKeysOrg.map((key) => key.toLowerCase());
+const memberResourceKeys = _.keys(memberCombinedAttributes.properties);
 const memberResourcePath = 'library/members';
 const memberResourceUrl = resourcePathLink(apiBaseUrl, memberResourcePath);
 

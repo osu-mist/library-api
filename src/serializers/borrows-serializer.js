@@ -10,8 +10,7 @@ const borrowResourceProp = openapi.components.schemas.BorrowResource.properties;
 const borrowResourceType = borrowResourceProp.type.enum[0];
 const borrowResourceAttributes = borrowResourceProp.attributes.allOf;
 const borrowCombinedAttributes = _.merge(borrowResourceAttributes[0], borrowResourceAttributes[1]);
-const borrowResourceKeysOrg = _.keys(borrowCombinedAttributes.properties);
-const borrowResourceKeys = borrowResourceKeysOrg.map((key) => key.toLowerCase());
+const borrowResourceKeys = _.keys(borrowCombinedAttributes.properties);
 const borrowResourcePath = 'library/borrows';
 const borrowResourceUrl = resourcePathLink(apiBaseUrl, borrowResourcePath);
 

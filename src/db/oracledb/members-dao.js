@@ -2,7 +2,13 @@ import _ from 'lodash';
 import oracledb from 'oracledb';
 
 import { parseQuery } from 'utils/parse-query';
-import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from 'utils/dao-helper';
+import {
+  generateWhereClause,
+  generatePaginationParams,
+  convertToSnakeCase,
+  convertArrayToSnakeCase,
+  convertKeysToCamelCase,
+} from 'utils/dao-helper';
 
 import { getConnection } from './connection';
 
@@ -16,8 +22,9 @@ const getMembers = async (query) => {
   const connection = await getConnection();
   try {
     const parsedQuery = parseQuery(query);
-    const whereClause = generateWhereClause(parsedQuery).toLowerCase();
-    const paginationParams = generatePaginationParams(parsedQuery);
+    const snakeCaseParsedQuery = convertToSnakeCase(parsedQuery);
+    const whereClause = generateWhereClause(snakeCaseParsedQuery).toLowerCase();
+    const paginationParams = generatePaginationParams(snakeCaseParsedQuery);
 
     const selectQuery = `
       SELECT *
@@ -27,7 +34,7 @@ const getMembers = async (query) => {
     `;
 
     const { rows } = await connection.execute(selectQuery);
-    return convertKeysToLowercase(rows);
+    return convertKeysToCamelCase(rows);
   } finally {
     connection.close();
   }
@@ -59,7 +66,7 @@ const getMemberById = async (id) => {
       throw new Error('Expect a single object but got multiple results.');
     } else {
       const rawMembersLower = rows[0];
-      return convertKeysToLowercase([rawMembersLower])[0];
+      return convertKeysToCamelCase([rawMembersLower])[0];
     }
   } finally {
     connection.close();
@@ -78,19 +85,19 @@ const updateMemberById = async (id, updateData, existingMember) => {
   const connection = await getConnection();
 
   try {
-    const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
     const updatedMemberData = {
       ...existingMember,
-      ...lowercaseUpdateData,
+      ...updateData,
     };
 
-    const updateQueryKeys = Object.keys(updatedMemberData).filter((key) => key !== 'member_id');
-    const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
+    const updateQueryKeys = Object.keys(updatedMemberData).filter((key) => key !== 'memberId');
+    const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys);
+    const updateQuerySet = updateQueryKeySnake.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
     UPDATE library_api_members
     SET ${updateQuerySet}
-    WHERE member_id = :memberId
+    WHERE member_id = :member_id
   `;
     const bindVars = {
       memberId: id,
@@ -100,7 +107,7 @@ const updateMemberById = async (id, updateData, existingMember) => {
       bindVars[key] = key === 'state' ? updatedMemberData[key].toUpperCase() : updatedMemberData[key].toLowerCase();
     });
 
-    const result = await connection.execute(updateQuery, bindVars);
+    const result = await connection.execute(updateQuery, convertToSnakeCase(bindVars));
 
     if (result.rowsAffected === 1) {
       await connection.commit();
@@ -128,39 +135,39 @@ const postMember = async (body) => {
   try {
     const newMemberDataRaw = body.data.attributes;
     const newMemberData = {
-      firstname: newMemberDataRaw.firstName.toLowerCase(),
-      lastname: newMemberDataRaw.lastName.toLowerCase(),
+      firstName: newMemberDataRaw.firstName.toLowerCase(),
+      lastName: newMemberDataRaw.lastName.toLowerCase(),
       email: newMemberDataRaw.email.toLowerCase(),
       address: newMemberDataRaw.address.toLowerCase(),
       city: newMemberDataRaw.city.toLowerCase(),
       state: newMemberDataRaw.state.toUpperCase(),
       country: newMemberDataRaw.country.toLowerCase(),
-      phonenumber: newMemberDataRaw.phoneNumber,
+      phoneNumber: newMemberDataRaw.phoneNumber,
       status: 'active',
     };
 
     const insertQuery = `
     INSERT INTO library_api_members (
       member_id,
-      firstName,
-      lastName,
+      first_name,
+      last_name,
       email,
       address,
       city,
       state,
       country,
-      phoneNumber,
+      phone_number,
       status
     ) VALUES (
       library_api_members_seq.NEXTVAL,
-      :firstname,
-      :lastname,
+      :firstName,
+      :lastName,
       :email,
       :address,
       :city,
       :state,
       :country,
-      :phonenumber,
+      :phoneNumber,
       :status
     )
     RETURNING member_id INTO :insertedId
