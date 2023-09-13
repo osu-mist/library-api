@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 /**
  * Generates a WHERE clause based on parsed filter parameters.
  *
@@ -153,7 +155,7 @@ const convertDatesInObject = (data) => {
  * @returns {Array<Object>} A new array of objects with keys converted to camelCase.
  */
 const convertKeysToCamelCase = (rows) => rows.map((row) => Object.keys(row).reduce((acc, key) => {
-  const camelCaseKey = key.toLowerCase().replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+  const camelCaseKey = _.camelCase(key);
   acc[camelCaseKey] = row[key];
   return acc;
 }, {}));
@@ -169,7 +171,7 @@ const convertToSnakeCase = (obj) => Object.keys(obj).reduce((acc, key) => {
   if (key === 'page[number]' || key === 'page[size]') {
     acc[key] = obj[key];
   } else {
-    const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    const snakeCaseKey = _.snakeCase(key);
     acc[snakeCaseKey] = obj[key];
   }
   return acc;
