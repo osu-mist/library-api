@@ -10,8 +10,7 @@ const memberResourceProp = openapi.components.schemas.MemberResource.properties;
 const memberResourceType = memberResourceProp.type.enum[0];
 const memberResourceAttributes = memberResourceProp.attributes.allOf;
 const memberCombinedAttributes = _.merge(memberResourceAttributes[0], memberResourceAttributes[1]);
-const memberResourceKeysOrg = _.keys(memberCombinedAttributes.properties);
-const memberResourceKeys = memberResourceKeysOrg.map((key) => key.toLowerCase());
+const memberResourceKeys = _.keys(memberCombinedAttributes.properties);
 const memberResourcePath = 'library/members';
 const memberResourceUrl = resourcePathLink(apiBaseUrl, memberResourcePath);
 
@@ -37,7 +36,7 @@ const serializeMembers = (rawMembers, req) => {
   // TODO use req.path
   const topLevelSelfLink = paramsLink(memberResourceUrl, query);
   const serializerArgs = {
-    identifierField: 'member_id',
+    identifierField: 'memberId',
     resourceKeys: memberResourceKeys,
     pagination,
     resourcePath: memberResourcePath,
@@ -65,11 +64,11 @@ const serializeMember = (rawMember, req) => {
   // TODO use req.path
   const baseUrl = req.method === 'POST'
     ? memberResourceUrl
-    : resourcePathLink(memberResourceUrl, rawMember.member_id);
+    : resourcePathLink(memberResourceUrl, rawMember.memberId);
   const topLevelSelfLink = paramsLink(baseUrl, query);
 
   const serializerArgs = {
-    identifierField: 'member_id',
+    identifierField: 'memberId',
     resourceKeys: memberResourceKeys,
     resourcePath: memberResourcePath,
     topLevelSelfLink,

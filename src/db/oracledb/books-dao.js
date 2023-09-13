@@ -2,7 +2,13 @@ import _ from 'lodash';
 import oracledb from 'oracledb';
 
 import { parseQuery } from 'utils/parse-query';
-import { generateWhereClause, generatePaginationParams, convertKeysToLowercase } from 'utils/dao-helper';
+import {
+  generateWhereClause,
+  generatePaginationParams,
+  convertToSnakeCase,
+  convertArrayToSnakeCase,
+  convertKeysToCamelCase,
+} from 'utils/dao-helper';
 
 import { getConnection } from './connection';
 
@@ -16,8 +22,9 @@ const getBooks = async (query) => {
   const connection = await getConnection();
   try {
     const parsedQuery = parseQuery(query);
-    const whereClause = generateWhereClause(parsedQuery).toLowerCase();
-    const paginationParams = generatePaginationParams(parsedQuery);
+    const snakeCaseParsedQuery = convertToSnakeCase(parsedQuery);
+    const whereClause = generateWhereClause(snakeCaseParsedQuery).toLowerCase();
+    const paginationParams = generatePaginationParams(snakeCaseParsedQuery);
 
     const selectQuery = `
       SELECT *
@@ -27,7 +34,7 @@ const getBooks = async (query) => {
     `;
 
     const { rows } = await connection.execute(selectQuery);
-    return convertKeysToLowercase(rows);
+    return convertKeysToCamelCase(rows);
   } finally {
     connection.close();
   }
@@ -59,7 +66,7 @@ const getBookById = async (id) => {
       throw new Error('Expect a single object but got multiple results.');
     } else {
       const rawBooksLower = rows[0];
-      return convertKeysToLowercase([rawBooksLower])[0];
+      return convertKeysToCamelCase([rawBooksLower])[0];
     }
   } finally {
     connection.close();
@@ -78,19 +85,19 @@ const updateBookById = async (id, updateData, existingBook) => {
   const connection = await getConnection();
 
   try {
-    const lowercaseUpdateData = convertKeysToLowercase([updateData])[0];
     const updatedBookData = {
       ...existingBook,
-      ...lowercaseUpdateData,
+      ...updateData,
     };
 
-    const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'book_id');
-    const updateQuerySet = updateQueryKeys.map((key) => `${key} = :${key}`).join(', ');
+    const updateQueryKeys = Object.keys(updatedBookData).filter((key) => key !== 'bookId');
+    const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys);
+    const updateQuerySet = updateQueryKeySnake.map((key) => `${key} = :${key}`).join(', ');
 
     const updateQuery = `
       UPDATE library_api_books
       SET ${updateQuerySet}
-      WHERE book_id = :bookId
+      WHERE book_id = :book_id
     `;
 
     const bindVars = {
@@ -98,10 +105,10 @@ const updateBookById = async (id, updateData, existingBook) => {
     };
 
     updateQueryKeys.forEach((key) => {
-      bindVars[key] = key === 'publicationyear' ? updatedBookData[key] : updatedBookData[key].toLowerCase();
+      bindVars[key] = key === 'publicationYear' ? updatedBookData[key] : updatedBookData[key].toLowerCase();
     });
 
-    const result = await connection.execute(updateQuery, bindVars);
+    const result = await connection.execute(updateQuery, convertToSnakeCase(bindVars));
 
     if (result.rowsAffected === 1) {
       await connection.commit();
@@ -131,7 +138,7 @@ const postBook = async (body) => {
     const newBookData = {
       title: newBookDataRaw.title.toLowerCase(),
       author: newBookDataRaw.author.toLowerCase(),
-      publicationyear: newBookDataRaw.publicationYear,
+      publicationYear: newBookDataRaw.publicationYear,
       isbn: newBookDataRaw.isbn.toLowerCase(),
       genre: newBookDataRaw.genre.toLowerCase(),
       description: newBookDataRaw.description.toLowerCase(),
@@ -143,7 +150,7 @@ const postBook = async (body) => {
         book_id,
         title,
         author,
-        publicationyear,
+        publication_year,
         isbn,
         genre,
         description,
@@ -170,7 +177,7 @@ const postBook = async (body) => {
 
     if (result.rowsAffected === 1) {
       await connection.commit();
-      newBookData.book_id = result.outBinds.insertedId;
+      newBookData.bookId = result.outBinds.insertedId;
       return newBookData;
     }
     await connection.rollback();
