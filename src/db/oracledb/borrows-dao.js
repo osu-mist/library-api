@@ -10,6 +10,7 @@ import {
   convertToSnakeCase,
   convertArrayToSnakeCase,
   convertKeysToCamelCase,
+  removeNullKeys,
 } from 'utils/dao-helper';
 
 import { getConnection } from './connection';
@@ -91,15 +92,16 @@ const updateBorrowById = async (id, updateData, existingBorrow) => {
   let response = {};
 
   try {
-    const borrowData = {
+    let borrowData = {
       ...existingBorrow,
       ...updateData,
     };
 
+    borrowData = removeNullKeys(borrowData);
     const updatedBorrowData = convertDatesInObject(borrowData);
-
     const updateQueryKeys = Object.keys(updatedBorrowData).filter((key) => key !== 'borrowId');
     const updateQueryKeySnake = convertArrayToSnakeCase(updateQueryKeys);
+
     const updateQuerySet = updateQueryKeySnake.map((key) => {
       if (['borrow_date', 'due_date', 'return_date'].includes(key)) {
         return `${key} = TO_DATE(:${key}, 'YYYY-MM-DD')`;

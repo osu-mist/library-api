@@ -75,6 +75,19 @@ const convertKeysToLowercase = (arrayOfObjects) => (
 );
 
 /**
+ * Removes keys with null values from an object.
+ *
+ * @param {Object} obj - The object from which to remove keys.
+ * @returns {Object} A new object without any keys that have null values.
+ */
+const removeNullKeys = (obj) => Object.keys(obj).reduce((acc, key) => {
+  if (obj[key] !== null) {
+    acc[key] = obj[key];
+  }
+  return acc;
+}, {});
+
+/**
  * Formats date literals in a WHERE clause SQL string
  * to use the TO_DATE function in Oracle SQL.
  *
@@ -180,4 +193,5 @@ export {
   convertKeysToCamelCase,
   convertToSnakeCase,
   convertArrayToSnakeCase,
+  removeNullKeys,
 };
